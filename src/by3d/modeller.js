@@ -490,3 +490,96 @@ OW.By3D.tegnStillas = function (m, x, z, tomTomt) {
   }
   if (tomTomt) m.flate(x, 0.155, z, 3.2, 3.2, [0.40, 0.34, 0.26]);
 };
+
+/* ============================================================== FOLK I BYEN
+ * Herskeren din og innbyggerne går rundt i gatene. Dette bygges på nytt hver
+ * ramme i sin egen lille buffer, så byen føles levende uten at vi må bygge om
+ * hele bygeometrien.
+ */
+
+/* Går langs en firkantet «gate» med halvbredde R, som følger gateløpene */
+OW.By3D.gatePunkt = function (R, avstand) {
+  var omkrets = 8 * R;
+  var d = ((avstand % omkrets) + omkrets) % omkrets;
+  var seg = Math.floor(d / (2 * R)), t = (d % (2 * R)) / (2 * R);
+  if (seg === 0) return { x: -R + 2 * R * t, z: -R };
+  if (seg === 1) return { x: R, z: -R + 2 * R * t };
+  if (seg === 2) return { x: R - 2 * R * t, z: R };
+  return { x: -R, z: R - 2 * R * t };
+};
+
+OW.By3D.tegnFigur = function (m, x, z, skala, kropp, kappe, hatt, fase) {
+  var y = 0.16;
+  var hud = [0.80, 0.64, 0.50];
+  var sk = skala;
+  var vipp = Math.sin(fase * 2) * 0.035 * sk;      // gyngende gange
+  var steg = Math.sin(fase * 2) * 0.09 * sk;
+
+  /* bein */
+  m.kasse(x - 0.09 * sk, y, z + steg, 0.1 * sk, 0.24 * sk, 0.1 * sk, OW.By3D.mork(kropp, 0.35));
+  m.kasse(x + 0.09 * sk, y, z - steg, 0.1 * sk, 0.24 * sk, 0.1 * sk, OW.By3D.mork(kropp, 0.35));
+
+  /* kropp */
+  var ky = y + 0.24 * sk + vipp;
+  m.kasse(x, ky, z, 0.3 * sk, 0.34 * sk, 0.22 * sk, kropp, { mork: 0.22 });
+
+  /* kappe bak ryggen */
+  if (kappe) {
+    m.firkant(
+      [x - 0.16 * sk, ky + 0.34 * sk, z - 0.13 * sk],
+      [x + 0.16 * sk, ky + 0.34 * sk, z - 0.13 * sk],
+      [x + 0.13 * sk, ky - 0.08 * sk, z - 0.2 * sk],
+      [x - 0.13 * sk, ky - 0.08 * sk, z - 0.2 * sk], kappe);
+  }
+
+  /* hode */
+  var hy = ky + 0.34 * sk;
+  m.kasse(x, hy, z, 0.21 * sk, 0.21 * sk, 0.2 * sk, hud, { mork: 0.18 });
+
+  var ty = hy + 0.21 * sk;
+  if (hatt === 'krone') {
+    m.kasse(x, ty, z, 0.24 * sk, 0.09 * sk, 0.23 * sk, [0.92, 0.78, 0.30], { mork: 0.2 });
+    for (var i = -1; i <= 1; i++) {
+      m.spir(x + i * 0.08 * sk, ty + 0.09 * sk, z, 0.07 * sk, 0.1 * sk, [0.95, 0.82, 0.35]);
+    }
+  } else if (hatt === 'hjelm') {
+    m.kuppel(x, ty - 0.02 * sk, z, 0.14 * sk, 0.13 * sk, [0.62, 0.64, 0.68], 8);
+  } else if (hatt === 'spisshatt') {
+    m.sylinder(x, ty, z, 0.19 * sk, 0.34 * sk, kappe || [0.4, 0.3, 0.6], 7, 0);
+  } else if (hatt === 'straahatt') {
+    m.sylinder(x, ty - 0.01 * sk, z, 0.24 * sk, 0.05 * sk, [0.82, 0.72, 0.38], 8);
+    m.sylinder(x, ty + 0.04 * sk, z, 0.13 * sk, 0.1 * sk, [0.80, 0.70, 0.36], 8);
+  } else if (hatt === 'kapteinslue') {
+    m.kasse(x, ty, z, 0.23 * sk, 0.07 * sk, 0.24 * sk, [0.2, 0.26, 0.34], { mork: 0.2 });
+  }
+};
+
+/* Bygger hele folkemengden. tid = sekunder siden start. */
+OW.By3D.byggFolk = function (folk, tid, byRadius) {
+  var m = new OW.Mesh();
+  if (!folk) return m;
+
+  var ringer = Math.max(1, Math.floor(byRadius / OW.By3D.CELLE));
+  /* Midt i gateløpet mellom to tomterekker */
+  var gate = function (n) { return (Math.min(n, ringer) + 0.5) * OW.By3D.CELLE; };
+
+  /* innbyggerne */
+  for (var i = 0; i < folk.antall; i++) {
+    var R = gate(1 + (i % ringer));
+    var fart = 0.9 + OW.fro(i * 3.11) * 0.7;
+    var retning = OW.fro(i * 7.3) > 0.5 ? 1 : -1;
+    var start = OW.fro(i * 5.7) * 8 * R;
+    var p = OW.By3D.gatePunkt(R, start + tid * fart * retning);
+    var t = OW.fro(i * 9.13);
+    var klaer = [0.34 + t * 0.3, 0.30 + OW.fro(i * 2.7) * 0.26, 0.26 + OW.fro(i * 4.9) * 0.3];
+    OW.By3D.tegnFigur(m, p.x, p.z, 1.35, klaer, null, 'ingen', tid * fart * 2.2 + i);
+  }
+
+  /* herskeren – større, i sine egne farger, med hatt */
+  if (folk.kar) {
+    var Rh = gate(1);
+    var ph = OW.By3D.gatePunkt(Rh, tid * 0.55);
+    OW.By3D.tegnFigur(m, ph.x, ph.z, 2.1, folk.kar.farge, folk.kar.kappe, folk.kar.hatt, tid * 1.2);
+  }
+  return m;
+};

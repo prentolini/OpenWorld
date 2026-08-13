@@ -48,11 +48,30 @@ function finnChromium() {
     await side.waitForSelector('#startKnapp', { timeout: 5000 });
   });
 
+  await steg('Karakter kan velges før start', async () => {
+    const antall = await side.locator('[data-akt="velg-karakter"]').count();
+    if (antall < 4) throw new Error('bare ' + antall + ' karakterer vist');
+    await side.click('[data-akt="velg-karakter"][data-id="lard"]');
+    const info = await side.textContent('#karakterInfo');
+    if (!/Runa/.test(info)) throw new Error('karakterinfoen fulgte ikke valget');
+  });
+
   await steg('Nytt rike kan grunnlegges', async () => {
     await side.fill('#navnFelt', 'Testborg');
     await side.click('#startKnapp');
     await side.waitForSelector('#app:not(.skjult)', { timeout: 5000 });
     await side.click('.modal-bunn .knapp');           // lukk velkomstmodalen
+  });
+
+  await steg('Karakterens egenskap virker på riket', async () => {
+    const f = await side.evaluate(() => ({
+      valgt: OW.App.s.karakter,
+      rabatt: OW.App.d.forskrabatt,
+      gave: OW.App.s.res.kunnskap
+    }));
+    if (f.valgt !== 'lard') throw new Error('feil karakter lagret: ' + f.valgt);
+    if (f.rabatt < 0.11) throw new Error('forskningsrabatten mangler: ' + f.rabatt);
+    if (f.gave < 100) throw new Error('startgaven kom ikke: ' + f.gave);
   });
 
   await steg('Ressurslinjen fylles ut', async () => {
@@ -175,6 +194,27 @@ function finnChromium() {
     if (!skjult) throw new Error('3D-byen tegner fortsatt utenfor By-fanen');
     await side.click('#fane-by');
     await side.waitForTimeout(250);
+  });
+
+  await steg('Herskeren og innbyggerne går rundt i byen', async () => {
+    if (!tre_d) return;
+    await side.waitForFunction(() => OW.Scene.antallFolk > 200, null, { timeout: 5000 });
+    /* figurene skal faktisk flytte seg mellom to rammer */
+    const a = await side.evaluate(() => { OW.Scene._tid += 3; return OW.Scene._tid; });
+    const flyttet = await side.evaluate((t) => {
+      const f1 = OW.By3D.byggFolk(OW.Scene.folk, t, OW.Scene.byRadius);
+      const f2 = OW.By3D.byggFolk(OW.Scene.folk, t + 2, OW.Scene.byRadius);
+      return f1.pos.some((v, i) => Math.abs(v - f2.pos[i]) > 0.01);
+    }, a);
+    if (!flyttet) throw new Error('figurene står stille');
+  });
+
+  await steg('Herskerportrettet åpner karakterkortet', async () => {
+    await side.click('.by3d-hersker');
+    await side.waitForSelector('#modalLag:not(.skjult)', { timeout: 3000 });
+    const t = await side.textContent('#modalTittel');
+    if (!/Runa/.test(t)) throw new Error('feil hersker i kortet: ' + t);
+    await side.click('[data-akt="lukk-modal"]');
   });
 
   await steg('Hendelse kan besvares', async () => {

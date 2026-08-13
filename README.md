@@ -7,6 +7,14 @@ en øks, og jobber deg gjennom seks lag med progresjon:
 
 Hver gang du tror du er ferdig, åpner det seg et nytt system.
 
+## 🎭 Velg hvem du er
+
+Før du grunnlegger riket velger du én av åtte herskere — byggmesteren, jordmoren,
+den lærde, oppdageren, handelsfyrsten, feltherren, folketaleren eller
+mestersmeden. Valget er permanent, gir riket en varig egenskap og en startgave,
+og figuren **går faktisk rundt i byen din** med sin egen drakt, kappe og hatt.
+Trykk på portrettet for å se hvem du er og hvordan det går med riket.
+
 ## 🏙️ Byen er i 3D
 
 By-fanen viser riket ditt som en levende 3D-by du kan snurre, zoome og klikke i.
@@ -22,9 +30,18 @@ tilbake til en 2D-silhuett, og alt annet virker som før.
 
 * **Dra** for å snurre kameraet · **rull/knip** for å zoome · **klikk en bygning**
   for å oppgradere den direkte
+* Herskeren din og innbyggerne går i gatene — flere folk etter hvert som
+  befolkningen vokser
 * Sola følger kameraet med litt forskyvning — ellers ser du bare skyggesiden av
   din egen by
 * Døgnsyklus på fire minutter, med bølger på vannet og lys i vinduene
+
+## 📱 Laget for mobil
+
+Byen fyller skjermen, fanene ligger som en bunnmeny med tommelvennlige flater,
+og panelene kommer opp som en skuff du drar over byen. Portrettet ditt og
+byggekøen ligger som brikker rett oppå bybildet. Alt fungerer like godt i en
+nettleser på PC.
 
 ## Kom i gang
 
@@ -56,6 +73,7 @@ kode du kan kopiere for å flytte riket til en annen maskin.
 | 🏅 **20 bragder** | ✅ | Gir krystaller, som også kjøpes i butikken |
 | 🌅 **Sesong (25 nivåer)** | ✅ | Hele sporet kan spilles gratis |
 | 🧭 **Spesialisering** | ✅ (én vei) | Handel, krig eller kunnskap – permanent valg |
+| 🎭 **8 herskere** | ✅ | Egen egenskap, startgave og en figur som går i byen |
 
 ## Betalingsmodellen
 
@@ -89,6 +107,7 @@ src/data/             alt innhold – rediger her for å legge til nytt
   world.js              områder, handelsruter, hendelser, rivaler
   progress.js           oppdrag, laug, sesong, bragder
   shop.js               butikkvarer og priser
+  karakterer.js         de åtte herskerne med egenskaper og 3D-farger
 src/core/
   format.js             tallformatering på norsk
   state.js              tilstand, lagring, import/eksport
@@ -104,6 +123,7 @@ src/ui/
 tools/
   simulering.js         spiller spillet automatisk og sjekker balansen
   nettlesertest.js      klikker seg gjennom spillet i ekte Chromium
+  mobilbilder.js        tar skjermbilder i mobilformat (390×844)
 ```
 
 ## Testing
@@ -111,7 +131,8 @@ tools/
 ```bash
 node tools/simulering.js 14        # simuler 14 dagers spilling + 15 kontroller
 node tools/simulering.js 45 25     # 45 dager, 25 sekunder per steg (raskere)
-node tools/nettlesertest.js        # 20 UI-tester i ekte Chromium, inkl. 3D
+node tools/nettlesertest.js        # 24 UI-tester i ekte Chromium, inkl. 3D
+node tools/mobilbilder.js          # skjermbilder i mobilformat
 ```
 
 Slik ser progresjonen ut når boten spiller døgnet rundt (et menneske bruker

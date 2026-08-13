@@ -79,6 +79,33 @@ input[type=text], textarea {
 }
 input[type=text]:focus, textarea:focus { outline: 2px solid var(--gull2); outline-offset: 1px; }
 
+/* ------------------------------------------------------------- KARAKTERER */
+.karakter-rute {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px;
+}
+.karakter-kort {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: #1b1714; border: 1px solid var(--kant); border-radius: var(--r2);
+  padding: 9px 4px; cursor: pointer; color: var(--tekst2); font-family: inherit;
+  transition: transform .1s, border-color .15s;
+}
+.karakter-kort:hover { border-color: var(--kant2); transform: translateY(-2px); }
+.karakter-kort.valgt {
+  border-color: var(--gull2); background: linear-gradient(180deg, #34291b, #241d16);
+  color: #fff; box-shadow: 0 0 0 1px rgba(242,193,78,.25);
+}
+.karakter-ikon { font-size: 26px; line-height: 1.1; }
+.karakter-navn { font-size: 10.5px; font-weight: 600; }
+.karakter-info {
+  text-align: left; background: #1b1714; border: 1px solid var(--kant);
+  border-radius: var(--r2); padding: 12px 14px; margin: 10px 0 16px;
+}
+.karakter-info-topp { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 6px; }
+.karakter-replikk {
+  font-style: italic; color: var(--gull); font-size: 12.5px; margin: 8px 0;
+  border-left: 2px solid var(--gull2); padding-left: 10px;
+}
+
 /* ---------------------------------------------------------------- KNAPPER */
 .knapp {
   border: 1px solid var(--kant2); background: linear-gradient(180deg, #302a24, #262019);
@@ -112,8 +139,22 @@ input[type=text]:focus, textarea:focus { outline: 2px solid var(--gull2); outlin
   background: rgba(20,17,14,.93); backdrop-filter: blur(10px);
   border: 1px solid var(--kant); border-radius: var(--r);
 }
-.rike-merke { display: flex; align-items: center; gap: 9px; }
-.rike-merke > span { font-size: 26px; }
+.rike-merke {
+  display: flex; align-items: center; gap: 9px; cursor: pointer;
+  background: none; border: 1px solid transparent; border-radius: 999px;
+  padding: 3px 12px 3px 3px; color: var(--tekst); font-family: inherit; text-align: left;
+}
+.rike-merke:hover { border-color: var(--kant2); background: #1c1815; }
+.portrett {
+  position: relative; font-size: 22px; width: 38px; height: 38px; flex: none;
+  display: grid; place-items: center; border-radius: 50%;
+  background: #1a1613; border: 1px solid var(--kant2);
+}
+.portrett i {
+  position: absolute; right: -3px; bottom: -3px; font-size: 12px; font-style: normal;
+  background: var(--kort); border: 1px solid var(--kant2); border-radius: 50%; padding: 1px 2px;
+}
+.rike-tekst { display: flex; flex-direction: column; line-height: 1.25; }
 #rikeNavn { font-weight: 700; letter-spacing: .2px; }
 .ressurslinje { display: flex; gap: 6px; flex: 1; flex-wrap: wrap; justify-content: center; }
 .topp-hoyre { display: flex; align-items: center; gap: 8px; margin-left: auto; }
@@ -248,9 +289,9 @@ input[type=text]:focus, textarea:focus { outline: 2px solid var(--gull2); outlin
 
 /* ---------------------------------------------------------------- 3D-BYEN */
 #by3d {
-  position: relative; height: 48vh; min-height: 320px; max-height: 560px;
+  position: relative; height: 58vh; min-height: 320px; max-height: 640px;
   border: 1px solid var(--kant); border-radius: var(--r);
-  overflow: hidden; margin-bottom: 14px; background: #1a1d22;
+  overflow: hidden; margin-bottom: 0; background: #1a1d22;
 }
 #by3dLerret { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
 #by3dLerret:active { cursor: grabbing; }
@@ -268,10 +309,64 @@ input[type=text]:focus, textarea:focus { outline: 2px solid var(--gull2); outlin
 }
 .by3d-verktoy { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 6px; }
 .by3d-verktoy .ikonknapp { background: rgba(16, 14, 11, .72); backdrop-filter: blur(4px); }
+/* Herskerportrettet nede til venstre i byen */
+.by3d-hersker {
+  position: absolute; left: 10px; top: 10px;
+  display: flex; align-items: center; gap: 9px;
+  background: rgba(12, 10, 8, .66); border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px; padding: 5px 14px 5px 6px; cursor: pointer;
+  color: var(--tekst); font-family: inherit; text-align: left;
+  backdrop-filter: blur(6px);
+}
+.by3d-hersker:hover { border-color: var(--gull2); }
+.by3d-hersker > span:first-child {
+  font-size: 22px; width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center; background: rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.14);
+}
+.by3d-hersker-tekst { display: flex; flex-direction: column; line-height: 1.2; }
+.by3d-hersker-tekst b { font-size: 12.5px; }
+.by3d-hersker-tekst small { font-size: 10.5px; color: var(--gull); }
+
+/* Byggekøen som brikker nederst i bybildet */
+.by3d-ko {
+  position: absolute; right: 10px; bottom: 10px;
+  display: flex; flex-direction: column; gap: 6px; align-items: flex-end;
+  max-width: min(300px, 70%);
+}
+.ko-brikke {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  background: rgba(12, 10, 8, .74); border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px; padding: 6px 10px; cursor: pointer;
+  color: var(--tekst); font-family: inherit; font-size: 12px; text-align: left;
+  backdrop-filter: blur(6px);
+}
+.ko-brikke:hover { border-color: var(--gull2); }
+.ko-brikke-ikon { font-size: 17px; }
+.ko-brikke-tekst { flex: 1; min-width: 0; display: block; }
+.ko-brikke-tekst b { display: block; font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ko-brikke-tekst i {
+  display: block; height: 4px; margin-top: 3px; border-radius: 999px;
+  background: linear-gradient(90deg, var(--gull2), var(--gull));
+}
+.ko-brikke-tid { font-size: 11px; color: var(--tekst2); font-variant-numeric: tabular-nums; }
+
 .by3d-hint {
   position: absolute; left: 12px; bottom: 10px; font-size: 11px;
   color: rgba(255, 255, 255, .7); background: rgba(10, 9, 7, .5);
   padding: 3px 10px; border-radius: 999px; pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- SKUFFEN */
+/* By-fanen: byen øverst, resten som en skuff som skyves opp over den */
+.ark {
+  position: relative; margin: -18px -12px 0; padding: 4px 12px 0;
+  background: linear-gradient(180deg, rgba(26,23,20,0) 0, var(--bg2) 26px);
+  border-radius: 20px 20px 0 0;
+}
+.ark::before {
+  content: ""; display: block; width: 44px; height: 4px; margin: 10px auto 12px;
+  border-radius: 999px; background: var(--kant2);
 }
 
 /* ------------------------------------------------------------ RANGERING */
@@ -375,11 +470,51 @@ input[type=text]:focus, textarea:focus { outline: 2px solid var(--gull2); outlin
   border-radius: 0 var(--r2) var(--r2) 0; font-style: italic; color: var(--tekst2); font-size: 13px; margin-top: 10px;
 }
 
-@media (max-width: 720px) {
-  #topp { gap: 8px; padding: 8px; }
-  .ressurslinje { order: 3; width: 100%; justify-content: flex-start; }
-  .pille { padding: 4px 9px; font-size: 12px; }
+@media (max-width: 760px) {
+  #app { padding: 6px 10px 86px; }
+  #topp { gap: 8px; padding: 8px; position: sticky; top: 0; }
+  .ressurslinje { order: 3; width: 100%; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
+  .ressurslinje::-webkit-scrollbar { display: none; }
+  .pille { padding: 4px 9px; font-size: 12px; flex: none; }
+  #statuslinje { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+  #statuslinje::-webkit-scrollbar { display: none; }
+  .status { flex: none; }
+  .oppstart-kort { padding: 22px 16px; }
   .oppstart-kort h1 { font-size: 32px; }
   .rute { grid-template-columns: 1fr; }
   .sesong-rad { grid-template-columns: 44px 1fr 1fr; }
+  .karakter-rute { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  .karakter-ikon { font-size: 22px; }
+
+  /* Byen tar mesteparten av skjermen – det er den spillet handler om */
+  #by3d { height: 54vh; min-height: 260px; }
+  .by3d-hint { display: none; }
+  .by3d-hersker { padding: 4px 12px 4px 4px; }
+  .by3d-hersker > span:first-child { width: 32px; height: 32px; font-size: 19px; }
+
+  /* Fanene blir en ekte bunnmeny */
+  #faner {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 32;
+    margin: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+    background: rgba(18, 15, 13, .97); border-top: 1px solid var(--kant);
+    backdrop-filter: blur(10px); gap: 3px;
+  }
+  .fane {
+    flex-direction: column; gap: 2px; padding: 7px 8px 5px;
+    font-size: 9.5px; min-width: 54px; border-radius: 12px;
+  }
+  .fane > span:first-child { font-size: 19px; }
+  .fane .merke { position: absolute; top: 2px; right: 6px; }
+
+  /* Varsler skal ikke dekke byen – smalere, og over bunnmenyen */
+  #toaster { right: 8px; left: 8px; bottom: 78px; max-width: none; }
+  .toast { font-size: 12.5px; padding: 9px 12px; }
+  .by3d-etikett { font-size: 10px; padding: 1px 6px; }
+  .by3d-ko { max-width: 62%; }
+
+  /* Alt som kan trykkes må være stort nok for en tommel */
+  .knapp { padding: 11px 14px; font-size: 14px; }
+  .knapp.mini { padding: 8px 11px; font-size: 12.5px; }
+  .ikonknapp { width: 40px; height: 40px; }
+  .modal-bunn .knapp { min-height: 46px; }
 }

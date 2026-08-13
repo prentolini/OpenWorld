@@ -571,6 +571,10 @@ OW.E = {
       leggTil(OW.TECH_INDEX[tid].bonus);
     }
 
+    /* Herskerens egenskap */
+    var kar = OW.karakterFor(s);
+    if (kar) leggTil(kar.bonus);
+
     /* Laug */
     for (i = 0; i < s.laug.length; i++) {
       if (OW.LAUG_INDEX[s.laug[i]]) leggTil(OW.LAUG_INDEX[s.laug[i]].bonus);

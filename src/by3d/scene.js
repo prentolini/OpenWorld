@@ -57,7 +57,14 @@ OW.Scene = {
       pos: gl.createBuffer(), nor: gl.createBuffer(),
       farge: gl.createBuffer(), flagg: gl.createBuffer()
     };
+    /* Folkene bor i sin egen buffer – de flytter seg hele tiden, mens
+       husene står stille og bare bygges om når byen endrer seg. */
+    OW.Scene.buffereFolk = {
+      pos: gl.createBuffer(), nor: gl.createBuffer(),
+      farge: gl.createBuffer(), flagg: gl.createBuffer()
+    };
     OW.Scene.antall = 0;
+    OW.Scene.antallFolk = 0;
 
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
@@ -140,7 +147,13 @@ OW.Scene = {
   nullstillKamera: function () {
     OW.Scene.kamera.yaw = 3.86;      // ser mot innsjøen i nord
     OW.Scene.kamera.pitch = 0.58;
-    OW.Scene.kamera.dist = OW.klem(OW.Scene.byRadius * 2.1 + 5, 18, 120);
+    var d = OW.Scene.byRadius * 2.1 + 5;
+    /* På en mobilskjerm er bildet høyt og smalt, og byen faller utenfor
+       kantene. Trekk kameraet tilbake i takt med hvor smalt lerretet er. */
+    var c = OW.Scene.lerret;
+    var forhold = (c && c.clientHeight) ? c.clientWidth / c.clientHeight : 1.6;
+    if (forhold < 1.3) d *= Math.pow(1.3 / Math.max(0.45, forhold), 0.8);
+    OW.Scene.kamera.dist = OW.klem(d, 18, 160);
   },
 
   /* --------------------------------------------------- STRÅLE MOT BAKKEN */
@@ -321,18 +334,35 @@ OW.Scene = {
       (1 - natt * 0.72) - kveld * 0.06
     ]));
 
-    var a = OW.Scene.attr, b = OW.Scene.buffere;
+    var a = OW.Scene.attr;
     var bind = function (buf, plass, str) {
       if (plass < 0) return;
       gl.bindBuffer(gl.ARRAY_BUFFER, buf);
       gl.enableVertexAttribArray(plass);
       gl.vertexAttribPointer(plass, str, gl.FLOAT, false, 0, 0);
     };
-    bind(b.pos, a.pos, 3);
-    bind(b.nor, a.nor, 3);
-    bind(b.farge, a.farge, 3);
-    bind(b.flagg, a.flagg, 1);
-    gl.drawArrays(gl.TRIANGLES, 0, OW.Scene.antall);
+    var tegnBuffer = function (bf, ant) {
+      if (!ant) return;
+      bind(bf.pos, a.pos, 3);
+      bind(bf.nor, a.nor, 3);
+      bind(bf.farge, a.farge, 3);
+      bind(bf.flagg, a.flagg, 1);
+      gl.drawArrays(gl.TRIANGLES, 0, ant);
+    };
+    tegnBuffer(OW.Scene.buffere, OW.Scene.antall);
+
+    /* Folkene går videre – bygges om noen ganger i sekundet */
+    if (OW.Scene.folk && naa - (OW.Scene._sisteFolk || 0) > 50) {
+      OW.Scene._sisteFolk = naa;
+      var fm = OW.By3D.byggFolk(OW.Scene.folk, OW.Scene._tid, OW.Scene.byRadius);
+      var bf = OW.Scene.buffereFolk;
+      gl.bindBuffer(gl.ARRAY_BUFFER, bf.pos); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fm.pos), gl.DYNAMIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bf.nor); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fm.nor), gl.DYNAMIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bf.farge); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fm.farge), gl.DYNAMIC_DRAW);
+      gl.bindBuffer(gl.ARRAY_BUFFER, bf.flagg); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fm.flagg), gl.DYNAMIC_DRAW);
+      OW.Scene.antallFolk = fm.antall();
+    }
+    tegnBuffer(OW.Scene.buffereFolk, OW.Scene.antallFolk);
 
     OW.Scene.tegnEtiketter(OW.M.gang(proj, view), bredde / pd, hoyde / pd, natt);
   },
@@ -377,6 +407,14 @@ OW.Scene = {
         el.classList.toggle('uthevet', uthevet);
       }
     }
+  },
+
+  /* Hvor mange innbyggere som skal gå rundt, og hvem herskeren er */
+  settFolk: function (pop, karakter) {
+    OW.Scene.folk = {
+      antall: OW.klem(Math.round(pop / 22), 4, 22),
+      kar: karakter
+    };
   },
 
   settSynlig: function (paa) {

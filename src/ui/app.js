@@ -22,10 +22,13 @@ OW.App = {
 
   /* --------------------------------------------------------------- START */
 
+  valgtKarakter: OW.KARAKTERER[0].id,
+
   init: function () {
     var lagret = OW.laste();
     var navnFelt = document.getElementById('navnFelt');
     var fortsett = document.getElementById('fortsettKnapp');
+    OW.App.tegnKarakterValg();
 
     if (lagret) {
       navnFelt.value = lagret.navn;
@@ -39,7 +42,10 @@ OW.App = {
       if (lagret && !confirm('Dette sletter det gamle riket «' + lagret.navn + '». Er du sikker?')) return;
       var navn = (navnFelt.value || 'Nyhavn').trim().slice(0, 18) || 'Nyhavn';
       var s = OW.nyTilstand(navn);
-      OW.E.logg(s, 'Riket ' + navn + ' er grunnlagt.', '🏰');
+      s.karakter = OW.App.valgtKarakter;
+      var kar = OW.karakterFor(s);
+      OW.E.gi(s, kar.gave);
+      OW.E.logg(s, kar.navn + ' grunnla riket ' + navn + '.', kar.ikon);
       OW.App.startSpill(s, true);
     };
 
@@ -53,6 +59,28 @@ OW.App = {
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden && OW.App.s) OW.App.taIgjen();
     });
+  },
+
+  tegnKarakterValg: function () {
+    var rute = document.getElementById('karakterValg');
+    if (!rute) return;
+    var h = '';
+    for (var i = 0; i < OW.KARAKTERER.length; i++) {
+      var k = OW.KARAKTERER[i];
+      h += '<button class="karakter-kort' + (k.id === OW.App.valgtKarakter ? ' valgt' : '') + '" ' +
+        'data-akt="velg-karakter" data-id="' + k.id + '" title="' + OW.UI.esc(k.tittel) + '">' +
+        '<span class="karakter-ikon">' + k.ikon + '</span>' +
+        '<span class="karakter-navn">' + k.navn.split(' ')[0] + '</span></button>';
+    }
+    rute.innerHTML = h;
+
+    var k2 = OW.KARAKTER_INDEX[OW.App.valgtKarakter];
+    document.getElementById('karakterInfo').innerHTML =
+      '<div class="karakter-info-topp"><b>' + OW.UI.esc(k2.navn) + '</b>' +
+      '<span class="merkelapp gull">' + OW.UI.esc(k2.tittel) + '</span></div>' +
+      '<div class="liten">' + OW.UI.esc(k2.tekst) + '</div>' +
+      '<div class="karakter-replikk">' + OW.UI.esc(k2.replikk) + '</div>' +
+      '<div class="gir"><span>' + k2.trekk + '</span></div>';
   },
 
   startSpill: function (s, nytt) {
@@ -120,7 +148,12 @@ OW.App = {
     if (!s || !d) return;
     if (tving) d = OW.App.d = OW.E.beregn(s);
 
+    var kar = OW.karakterFor(s);
     OW.App.sett('rikeNavn', OW.UI.esc(s.navn), true);
+    OW.App.sett('karakterIkon', kar.ikon, true);
+    OW.App.sett('by3dHerskerIkon', kar.ikon, true);
+    OW.App.sett('by3dHerskerNavn', OW.UI.esc(kar.navn), true);
+    OW.App.sett('by3dHerskerTittel', OW.UI.esc(kar.tittel), true);
     OW.App.sett('rikeIkon', OW.EPOKER[s.era].ikon, true);
     OW.App.sett('rikeEra', OW.EPOKER[s.era].navn, true);
     OW.App.sett('krystallTall', OW.F.tall(s.krystall), true);
@@ -176,7 +209,11 @@ OW.App = {
       var vis3d = OW.App.fane === 'by';
       document.getElementById('by3d').classList.toggle('skjult', !vis3d);
       OW.Scene.settSynlig(vis3d);
-      if (vis3d) OW.Scene.oppdaterBy(s);
+      if (vis3d) {
+        OW.Scene.oppdaterBy(s);
+        OW.Scene.settFolk(s.pop, kar);
+      }
+      OW.App.sett('by3dKo', OW.App.koBrikker(s));
     }
 
     /* Panel */
@@ -192,6 +229,21 @@ OW.App = {
       case 'butikk': innhold = OW.UI.faneButikk(s); break;
     }
     OW.App.sett('innhold', innhold);
+  },
+
+  /* Kompakte byggekø-brikker som ligger oppå 3D-byen */
+  koBrikker: function (s) {
+    var na = Date.now(), h = '';
+    for (var i = 0; i < s.ko.length; i++) {
+      var el = s.ko[i], b = OW.BYGG_INDEX[el.id];
+      var tot = (el.slutt - el.start) / 1000, igj = Math.max(0, (el.slutt - na) / 1000);
+      h += '<button class="ko-brikke" data-akt="vis-bygg" data-id="' + el.id + '">' +
+        '<span class="ko-brikke-ikon">' + b.ikon + '</span>' +
+        '<span class="ko-brikke-tekst"><b>' + b.navn + ' ' + el.niva + '</b>' +
+        '<i style="width:' + OW.klem((1 - igj / tot) * 100, 0, 100).toFixed(0) + '%"></i></span>' +
+        '<span class="ko-brikke-tid">' + OW.F.tid(igj) + '</span></button>';
+    }
+    return h;
   },
 
   /* Skriver bare når innholdet faktisk er endret (unngår flimring) */
@@ -237,6 +289,11 @@ OW.App = {
       return;
     }
     if (akt === 'lukk-modal') { OW.App.lukkModal(); return; }
+    if (akt === 'velg-karakter') {
+      OW.App.valgtKarakter = el.dataset.id;
+      OW.App.tegnKarakterValg();
+      return;
+    }
     if (!s) return;
 
     switch (akt) {
@@ -332,9 +389,15 @@ OW.App = {
         OW.App.svarHendelse(parseInt(el.dataset.i, 10));
         break;
 
+      case 'vis-bygg': OW.App.visBygg(el.dataset.id); break;
+
       case 'kamera-inn': OW.Scene._harRort = true; OW.Scene.zoom(0.82); break;
       case 'kamera-ut': OW.Scene._harRort = true; OW.Scene.zoom(1.22); break;
       case 'kamera-null': OW.Scene.nullstillKamera(); break;
+
+      case 'karakterkort':
+        OW.App.visKarakter();
+        break;
 
       case 'innstillinger':
         OW.App.visInnstillinger();
@@ -345,10 +408,13 @@ OW.App = {
   /* ---------------------------------------------------------- MODAL/TOAST */
 
   toast: function (tekst, type) {
+    var lag = document.getElementById('toaster');
+    /* På mobil spiser en stabel med varsler hele skjermen – hold på de nyeste */
+    while (lag.children.length >= 3) lag.removeChild(lag.firstChild);
     var t = document.createElement('div');
     t.className = 'toast ' + (type || '');
     t.textContent = tekst;
-    document.getElementById('toaster').appendChild(t);
+    lag.appendChild(t);
     setTimeout(function () {
       t.classList.add('ut');
       setTimeout(function () { t.remove(); }, 320);
@@ -566,6 +632,25 @@ OW.App = {
         } },
         { tekst: 'Avbryt' }
       ]);
+  },
+
+  visKarakter: function () {
+    var s = OW.App.s, d = OW.App.d, k = OW.karakterFor(s);
+    OW.App.modal(k.ikon + ' ' + OW.UI.esc(k.navn),
+      '<div class="karakter-info-topp"><span class="merkelapp gull">' + OW.UI.esc(k.tittel) + '</span>' +
+      '<span class="merkelapp">Hersker over ' + OW.UI.esc(s.navn) + '</span></div>' +
+      '<p>' + OW.UI.esc(k.tekst) + '</p>' +
+      '<div class="karakter-replikk">' + OW.UI.esc(k.replikk) + '</div>' +
+      '<div class="kort" style="margin-top:12px"><b>Herskerens egenskap</b>' +
+      '<div class="gir" style="margin-top:6px"><span>' + k.trekk + '</span></div></div>' +
+      '<div class="kort" style="margin-top:10px">' +
+      '<div class="info-rad"><span>Epoke</span><span>' + OW.EPOKER[s.era].navn + '</span></div>' +
+      '<div class="info-rad"><span>Innbyggere</span><span>' + Math.floor(s.pop) + '</span></div>' +
+      '<div class="info-rad"><span>Tilfredshet</span><span>' + Math.round(d.lykke) + ' / 100</span></div>' +
+      '<div class="info-rad"><span>Rikspoeng</span><span>' + OW.F.hel(d.rikspoeng) + ' (#' + d.rangering + ')</span></div>' +
+      '<div class="info-rad"><span>Regjert i</span><span>' + OW.F.tid((Date.now() - s.opprettet) / 1000) + '</span></div></div>' +
+      '<p class="finstilt" style="margin-top:10px">Herskeren går rundt i byen din. Se etter kronen.</p>',
+      [{ tekst: 'Tilbake til riket', klasse: 'primar' }]);
   },
 
   visInnstillinger: function () {

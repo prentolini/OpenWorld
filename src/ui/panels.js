@@ -57,7 +57,8 @@ OW.UI = {
 
     /* Byutsikt i 2D – brukes bare når WebGL ikke er tilgjengelig.
        Ellers står den ekte 3D-byen over dette panelet. */
-    if (OW.App && OW.App.tre_d) return h + OW.UI.faneByResten(s, d);
+    /* Med 3D ligger byen over dette panelet, og resten kommer som en skuff */
+    if (OW.App && OW.App.tre_d) return '<div class="ark">' + OW.UI.faneByResten(s, d) + '</div>';
 
     h += '<div class="byutsikt era' + s.era + '"><span class="sol">' + (s.era >= 4 ? '🌇' : '☀️') + '</span><div class="grunn"></div><div class="skyline">';
     var hus = [];

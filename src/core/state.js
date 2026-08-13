@@ -9,6 +9,7 @@ OW.nyTilstand = function (navn) {
   return {
     v: OW.VERSJON,
     navn: navn || 'Nyhavn',
+    karakter: 'byggmester',
     opprettet: na,
     sistTikk: na,
     era: 0,
