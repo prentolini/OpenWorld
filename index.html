@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OpenWorld — Bygg ditt imperium</title>
+<meta name="description" content="Strategispill: bygg en landsby om til en verdensmakt.">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
+</head>
+<body>
+
+<div id="app" class="skjult">
+
+  <!-- ============================================================ TOPPLINJE -->
+  <header id="topp">
+    <div class="topp-venstre">
+      <div id="rikeMerke" class="rike-merke">
+        <span id="rikeIkon">🛖</span>
+        <div>
+          <div id="rikeNavn">Nyhavn</div>
+          <div id="rikeEra" class="liten">Landsby</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ressurslinje" class="ressurslinje"></div>
+
+    <div class="topp-hoyre">
+      <div id="krystallBoks" class="pille pille-krystall" title="Krystaller – tjenes i spillet eller kjøpes">
+        <span>💎</span><b id="krystallTall">0</b>
+      </div>
+      <button class="ikonknapp" data-akt="innstillinger" title="Innstillinger">⚙️</button>
+    </div>
+  </header>
+
+  <!-- =============================================================== STATUS -->
+  <div id="statuslinje"></div>
+
+  <!-- ================================================================ FANER -->
+  <nav id="faner"></nav>
+
+  <!-- ================================================================ INNHOLD -->
+  <main id="innhold"></main>
+
+  <footer id="bunn">
+    <span id="lagretStatus">Lagrer automatisk</span>
+    <span class="prikk">•</span>
+    <span>OpenWorld — demo. Butikken bruker ikke ekte penger.</span>
+  </footer>
+</div>
+
+<!-- =============================================================== OPPSTART -->
+<div id="oppstart" class="skjerm">
+  <div class="oppstart-kort">
+    <div class="oppstart-ikon">🏰</div>
+    <h1>OpenWorld</h1>
+    <p class="undertittel">Tolv mennesker. Én øks. Én drøm om et imperium.</p>
+
+    <div class="oppstart-reise">
+      <span>🛖 Landsby</span><i>→</i><span>🏘️ By</span><i>→</i><span>👑 Kongerike</span><i>→</i>
+      <span>🏛️ Imperium</span><i>→</i><span>🗺️ Kontinent</span><i>→</i><span>🌍 Verdensmakt</span>
+    </div>
+
+    <label class="felt">
+      <span>Hva skal riket ditt hete?</span>
+      <input id="navnFelt" type="text" maxlength="18" placeholder="Nyhavn" autocomplete="off">
+    </label>
+
+    <button id="startKnapp" class="knapp stor primar">Grunnlegg riket ⚒️</button>
+    <button id="fortsettKnapp" class="knapp stor skjult">Fortsett spillet</button>
+
+    <p class="finstilt">Spillet lagres i denne nettleseren. Ingen konto, ingen ekte betaling.</p>
+  </div>
+</div>
+
+<!-- ================================================================= MODAL -->
+<div id="modalLag" class="modal-lag skjult">
+  <div class="modal" id="modal">
+    <div class="modal-topp">
+      <h2 id="modalTittel">Tittel</h2>
+      <button class="ikonknapp" data-akt="lukk-modal">✕</button>
+    </div>
+    <div class="modal-kropp" id="modalKropp"></div>
+    <div class="modal-bunn" id="modalBunn"></div>
+  </div>
+</div>
+
+<div id="toaster"></div>
+
+<!-- =============================================================== SKRIPTER -->
+<script src="src/core/format.js"></script>
+<script src="src/data/eras.js"></script>
+<script src="src/data/buildings.js"></script>
+<script src="src/data/tech.js"></script>
+<script src="src/data/world.js"></script>
+<script src="src/data/progress.js"></script>
+<script src="src/data/shop.js"></script>
+<script src="src/core/state.js"></script>
+<script src="src/core/engine.js"></script>
+<script src="src/core/payments.js"></script>
+<script src="src/ui/panels.js"></script>
+<script src="src/ui/app.js"></script>
+</body>
+</html>
