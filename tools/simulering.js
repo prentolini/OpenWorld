@@ -17,6 +17,7 @@ const filer = [
   'src/data/world.js',
   'src/data/progress.js',
   'src/data/shop.js',
+  'src/data/karakterer.js',
   'src/core/state.js',
   'src/core/engine.js',
   'src/core/payments.js'
