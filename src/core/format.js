@@ -23,7 +23,9 @@ OW.F = {
   },
   _kort: function (x) {
     var s = x < 10 ? x.toFixed(2) : x < 100 ? x.toFixed(1) : String(Math.round(x));
-    s = s.replace(/\.?0+$/, '');
+    /* Fjern bare nuller BAK komma. Uten denne sjekken ble «500» til «5»,
+       slik at 500 000 ble vist som 5k. */
+    if (s.indexOf('.') >= 0) s = s.replace(/\.?0+$/, '');
     return s.replace('.', ',');
   },
 

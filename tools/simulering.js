@@ -192,6 +192,17 @@ console.log('\n🔍 Kontroller');
 const feil = [];
 const sjekk = (ok, tekst) => { console.log(`  ${ok ? '✅' : '❌'} ${tekst}`); if (!ok) feil.push(tekst); };
 
+/* Tallformatering – 500 000 skal ikke bli «5k» */
+const tallProver = [
+  [0, '0'], [7, '7'], [42, '42'], [500, '500'], [999, '999'],
+  [1000, '1k'], [1500, '1,5k'], [40000, '40k'], [500000, '500k'],
+  [1200000, '1,2 mill'], [3000000, '3 mill'], [2500000000, '2,5 mrd']
+];
+const galeTall = tallProver.filter(([inn, ut]) => OW.F.tall(inn) !== ut)
+  .map(([inn, ut]) => `${inn} ga «${OW.F.tall(inn)}», ventet «${ut}»`);
+galeTall.forEach(t => console.log('    ' + t));
+sjekk(galeTall.length === 0, 'Tallformateringen viser riktige verdier');
+
 sjekk(s.era >= 1, 'Boten kom seg forbi landsbystadiet');
 sjekk(s.oppdrag.indeks >= 4, 'Minst 4 oppdrag fullført');
 sjekk(d.omraderEid >= 2, 'Minst 2 områder erobret');
