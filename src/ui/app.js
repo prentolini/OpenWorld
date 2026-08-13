@@ -65,6 +65,13 @@ OW.App = {
 
     OW.App.tegnFaner();
 
+    /* 3D-byen. Faller pent tilbake til emoji-silhuetten hvis WebGL mangler. */
+    OW.App.tre_d = OW.Scene.start(
+      document.getElementById('by3dLerret'),
+      document.getElementById('by3dEtiketter')
+    );
+    if (OW.App.tre_d) OW.Scene.velgBygg = OW.App.visBygg;
+
     if (!nytt) {
       var rap = OW.E.offline(s);
       if (rap && rap.sekunder > 60) OW.App.visOfflineRapport(rap);
@@ -162,6 +169,14 @@ OW.App = {
         el.innerHTML = '<span>' + f.ikon + '</span>' + f.navn + vil;
       }
       el.classList.toggle('aktiv', OW.App.fane === f.id);
+    }
+
+    /* 3D-byen vises bare i By-fanen, og tegner ikke når den er skjult */
+    if (OW.App.tre_d) {
+      var vis3d = OW.App.fane === 'by';
+      document.getElementById('by3d').classList.toggle('skjult', !vis3d);
+      OW.Scene.settSynlig(vis3d);
+      if (vis3d) OW.Scene.oppdaterBy(s);
     }
 
     /* Panel */
@@ -317,6 +332,10 @@ OW.App = {
         OW.App.svarHendelse(parseInt(el.dataset.i, 10));
         break;
 
+      case 'kamera-inn': OW.Scene._harRort = true; OW.Scene.zoom(0.82); break;
+      case 'kamera-ut': OW.Scene._harRort = true; OW.Scene.zoom(1.22); break;
+      case 'kamera-null': OW.Scene.nullstillKamera(); break;
+
       case 'innstillinger':
         OW.App.visInnstillinger();
         break;
@@ -468,6 +487,48 @@ OW.App = {
     OW.RUTER.forEach(function (r) { if (r.era === idx) ut += '<li>Handelsrute: ' + r.navn + '</li>'; });
     if (idx === 2) ut += '<li><b>Rikets vei</b>: velg spesialisering i By-fanen</li>';
     return ut || '<li>Nye muligheter åpner seg.</li>';
+  },
+
+  /* Åpnes når du klikker en bygning i 3D-byen */
+  visBygg: function (id) {
+    var s = OW.App.s, d = OW.App.d, b = OW.BYGG_INDEX[id];
+    if (!b) return;
+    var niva = OW.E.niva(s, id), iKo = OW.E.iKo(s, id), neste = niva + iKo + 1;
+    var last = OW.E.byggLast(s, id);
+    var maks = OW.E.maksNiva(id);
+
+    var h = '<div class="kort-tekst">' + b.tekst + '</div>';
+    h += '<div class="info-rad"><span>Nivå nå</span><span>' + niva + (iKo ? ' (+' + iKo + ' i kø)' : '') + '</span></div>';
+    if (b.unikt) h += '<div class="liten" style="margin:8px 0">✦ ' + b.unikt + '</div>';
+
+    var knapper;
+    if (!last.ok) {
+      h += '<div class="merkelapp rod" style="margin-top:8px">🔒 ' + last.grunn + '</div>';
+      knapper = [{ tekst: 'Lukk' }];
+    } else if (neste > maks) {
+      h += '<div class="merkelapp gronn" style="margin-top:8px">Maksnivå nådd</div>';
+      knapper = [{ tekst: 'Lukk' }];
+    } else {
+      var kost = OW.E.byggKost(s, id, neste);
+      h += '<div class="seksjon-tittel" style="margin:14px 0 8px">Nivå ' + neste + '<span class="strek"></span></div>';
+      h += OW.UI.girTekst(b) + OW.UI.kost(s, kost);
+      h += '<div class="liten">⏱️ ' + OW.F.tid(OW.E.byggTid(s, d, id, neste)) + '</div>';
+      var kan = OW.E.harRaad(s, kost) && s.ko.length < OW.E.koPlasser(s);
+      knapper = [
+        { tekst: kan ? (niva > 0 ? 'Oppgrader til nivå ' + neste : 'Bygg') : 'Ikke nok til dette ennå',
+          klasse: kan ? 'primar' : '',
+          fn: function () {
+            if (!kan) return;
+            var r = OW.E.startBygg(OW.App.s, OW.App.d, id);
+            OW.App.lukkModal();
+            OW.App.toast(r.ok ? '🔨 ' + r.navn + ' nivå ' + r.niva + ' er satt i gang (' + OW.F.tid(r.sek) + ').' : r.grunn,
+              r.ok ? 'ok' : 'feil');
+            OW.App.tegn(true);
+          } },
+        { tekst: 'Lukk' }
+      ];
+    }
+    OW.App.modal(b.ikon + ' ' + b.navn, h, knapper);
   },
 
   bekreftLaug: function (id) {

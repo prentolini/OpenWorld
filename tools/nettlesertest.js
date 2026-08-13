@@ -25,7 +25,11 @@ function finnChromium() {
 }
 
 (async () => {
-  const nettleser = await chromium.launch({ executablePath: finnChromium() });
+  const nettleser = await chromium.launch({
+    executablePath: finnChromium(),
+    /* Testmaskinen har ikke GPU, så WebGL må kjøres i programvare */
+    args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--use-angle=swiftshader']
+  });
   const side = await nettleser.newPage({ viewport: { width: 1280, height: 1000 } });
 
   const feil = [];
@@ -62,8 +66,13 @@ function finnChromium() {
     await side.waitForFunction(() => OW.App.s.bygg.tomrer >= 1, null, { timeout: 20000 });
   });
 
+  const tre_d = await side.evaluate(() => !!OW.App.tre_d);
+  console.log('  ℹ️  Visning: ' + (tre_d ? '3D (WebGL)' : '2D (reserveløsning)'));
+
   await steg('Byutsikten viser bygningen', async () => {
-    await side.waitForSelector('.skyline .hus', { timeout: 4000 });
+    if (!tre_d) { await side.waitForSelector('.skyline .hus', { timeout: 4000 }); return; }
+    await side.waitForFunction(() => OW.Scene.antall > 1000, null, { timeout: 6000 });
+    await side.waitForSelector('.by3d-etikett', { timeout: 4000 });
   });
 
   await steg('Alle faner kan åpnes', async () => {
@@ -128,6 +137,44 @@ function finnChromium() {
     await side.click('.modal-bunn .knapp.primar');
     const medlem = await side.evaluate(() => OW.App.s.premium.medlem);
     if (!medlem) throw new Error('medlemskapet ble ikke aktivert');
+  });
+
+  await steg('3D-byen tegner geometri for hele riket', async () => {
+    if (!tre_d) return;
+    await side.click('#fane-by');
+    await side.waitForTimeout(300);
+    const f = await side.evaluate(() => ({ ant: OW.Scene.antall, merker: OW.Scene.merker.length }));
+    if (f.ant < 3000) throw new Error('for lite geometri: ' + f.ant + ' hjørner');
+    if (f.merker < 5) throw new Error('for få etiketter: ' + f.merker);
+  });
+
+  await steg('Klikk på en bygning i 3D åpner byggekortet', async () => {
+    if (!tre_d) return;
+    await side.evaluate(() => OW.Scene.velgBygg('radhus'));
+    await side.waitForSelector('#modalLag:not(.skjult)', { timeout: 3000 });
+    const tittel = await side.textContent('#modalTittel');
+    if (!/Rådhus/.test(tittel)) throw new Error('feil bygning i modalen: ' + tittel);
+    await side.click('[data-akt="lukk-modal"]');
+  });
+
+  await steg('Strålen treffer riktig tomt', async () => {
+    if (!tre_d) return;
+    const treff = await side.evaluate(() => {
+      const r = OW.Scene.lerret.getBoundingClientRect();
+      /* midt i lerretet skal treffe rådhusets tomt i sentrum */
+      return OW.Scene.byggPaaTomt(OW.Scene.tomtUnder(r.left + r.width / 2, r.top + r.height / 2));
+    });
+    if (treff !== 'radhus') throw new Error('midtpunktet traff «' + treff + '»');
+  });
+
+  await steg('3D-byen skjules i andre faner', async () => {
+    if (!tre_d) return;
+    await side.click('#fane-handel');
+    await side.waitForTimeout(250);
+    const skjult = await side.evaluate(() => document.getElementById('by3d').classList.contains('skjult') && !OW.Scene.synlig);
+    if (!skjult) throw new Error('3D-byen tegner fortsatt utenfor By-fanen');
+    await side.click('#fane-by');
+    await side.waitForTimeout(250);
   });
 
   await steg('Hendelse kan besvares', async () => {

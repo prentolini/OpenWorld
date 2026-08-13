@@ -7,6 +7,25 @@ en øks, og jobber deg gjennom seks lag med progresjon:
 
 Hver gang du tror du er ferdig, åpner det seg et nytt system.
 
+## 🏙️ Byen er i 3D
+
+By-fanen viser riket ditt som en levende 3D-by du kan snurre, zoome og klikke i.
+Bygningene vokser synlig med nivået: én hytte blir til en klynge, klyngen blir
+til fleretasjes hus med tårn og flagg. Vinduene lyser når natten faller på,
+byggeplasser får stillas, bymuren legger seg rundt hele byen, og landskapet
+skifter karakter når du bytter epoke.
+
+3D-en er skrevet fra bunnen i **ren WebGL — uten three.js eller noe annet
+bibliotek**. Hele byen tegnes som én buffer med ett tegnekall, og bygges bare om
+når byen faktisk endrer seg. Har du ikke WebGL, faller spillet automatisk
+tilbake til en 2D-silhuett, og alt annet virker som før.
+
+* **Dra** for å snurre kameraet · **rull/knip** for å zoome · **klikk en bygning**
+  for å oppgradere den direkte
+* Sola følger kameraet med litt forskyvning — ellers ser du bare skyggesiden av
+  din egen by
+* Døgnsyklus på fire minutter, med bølger på vannet og lys i vinduene
+
 ## Kom i gang
 
 Ingen installasjon, ingen byggesteg, ingen avhengigheter:
@@ -75,6 +94,10 @@ src/core/
   state.js              tilstand, lagring, import/eksport
   engine.js             all regnelogikk (produksjon, kø, poeng, tikk)
   payments.js           simulert kjøpslag + hvor ekte betaling hører hjemme
+src/by3d/               3D-byen – ingen tredjepartsbibliotek
+  motor.js              matriser, meshbygger og shaderne
+  modeller.js           én oppskrift per bygningstype + terreng
+  scene.js              kamera, lys, døgnsyklus, klikk og etiketter
 src/ui/
   panels.js             én funksjon per fane
   app.js                spilløkke, klikk, modaler, varsler
@@ -88,7 +111,7 @@ tools/
 ```bash
 node tools/simulering.js 14        # simuler 14 dagers spilling + 15 kontroller
 node tools/simulering.js 45 25     # 45 dager, 25 sekunder per steg (raskere)
-node tools/nettlesertest.js        # 16 UI-tester i ekte Chromium
+node tools/nettlesertest.js        # 20 UI-tester i ekte Chromium, inkl. 3D
 ```
 
 Slik ser progresjonen ut når boten spiller døgnet rundt (et menneske bruker
@@ -125,7 +148,8 @@ Innholdet er rene datalister — nesten alt nytt kan legges til uten å røre mo
 
 * **Ny bygning:** legg til et objekt i `src/data/buildings.js`. Feltene i `gir`
   (`prod`, `popTak`, `lager`, `lykke`, `militaer`, `byggfart`, `ruter` …) plukkes
-  automatisk opp av `OW.E.beregn`.
+  automatisk opp av `OW.E.beregn`. Gi den en oppskrift i `OW.By3D.MODELL` også,
+  så dukker den opp i 3D-byen med egen tomt.
 * **Ny forskning / område / rute / hendelse:** samme mønster i `tech.js` og `world.js`.
 * **Nytt kapittel:** legg til i `OW.OPPDRAG`. Måltypene finnes i `OW.E.malStatus`.
 * **Ny sesong:** bytt ut `OW.SESONG` og `OW.SESONG_BELONNING`.

@@ -40,6 +40,18 @@
   <!-- ================================================================ FANER -->
   <nav id="faner"></nav>
 
+  <!-- ============================================================== 3D-BYEN -->
+  <div id="by3d" class="skjult">
+    <canvas id="by3dLerret"></canvas>
+    <div id="by3dEtiketter"></div>
+    <div class="by3d-verktoy">
+      <button class="ikonknapp" data-akt="kamera-inn" title="Zoom inn">＋</button>
+      <button class="ikonknapp" data-akt="kamera-ut" title="Zoom ut">－</button>
+      <button class="ikonknapp" data-akt="kamera-null" title="Nullstill kamera">⟲</button>
+    </div>
+    <div class="by3d-hint">Dra for å snurre · rull for å zoome · klikk en bygning</div>
+  </div>
+
   <!-- ================================================================ INNHOLD -->
   <main id="innhold"></main>
 
@@ -99,6 +111,9 @@
 <script src="src/core/state.js"></script>
 <script src="src/core/engine.js"></script>
 <script src="src/core/payments.js"></script>
+<script src="src/by3d/motor.js"></script>
+<script src="src/by3d/modeller.js"></script>
+<script src="src/by3d/scene.js"></script>
 <script src="src/ui/panels.js"></script>
 <script src="src/ui/app.js"></script>
 </body>

@@ -55,7 +55,10 @@ OW.UI = {
   faneBy: function (s, d) {
     var h = '';
 
-    /* Byutsikt */
+    /* Byutsikt i 2D – brukes bare når WebGL ikke er tilgjengelig.
+       Ellers står den ekte 3D-byen over dette panelet. */
+    if (OW.App && OW.App.tre_d) return h + OW.UI.faneByResten(s, d);
+
     h += '<div class="byutsikt era' + s.era + '"><span class="sol">' + (s.era >= 4 ? '🌇' : '☀️') + '</span><div class="grunn"></div><div class="skyline">';
     var hus = [];
     for (var id in s.bygg) {
@@ -72,6 +75,12 @@ OW.UI = {
         hus[i].def.ikon + '<span class="niv">' + hus[i].niva + '</span></div>';
     }
     h += '</div></div>';
+    return h + OW.UI.faneByResten(s, d);
+  },
+
+  /* Alt under byutsikten – felles for 2D og 3D */
+  faneByResten: function (s, d) {
+    var h = '';
 
     /* Byggekø */
     var plasser = OW.E.koPlasser(s);

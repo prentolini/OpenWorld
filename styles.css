@@ -246,6 +246,34 @@ input[type=text]:focus, textarea:focus { outline: 2px solid var(--gull2); outlin
 }
 .byutsikt .grunn { position: absolute; left: 0; right: 0; bottom: 0; height: 22px; background: rgba(0,0,0,.28); }
 
+/* ---------------------------------------------------------------- 3D-BYEN */
+#by3d {
+  position: relative; height: 48vh; min-height: 320px; max-height: 560px;
+  border: 1px solid var(--kant); border-radius: var(--r);
+  overflow: hidden; margin-bottom: 14px; background: #1a1d22;
+}
+#by3dLerret { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#by3dLerret:active { cursor: grabbing; }
+#by3dEtiketter { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.by3d-etikett {
+  position: absolute; left: 0; top: 0; white-space: nowrap;
+  font-size: 11px; font-weight: 700; line-height: 1.3;
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(10, 9, 7, .68); border: 1px solid rgba(255, 255, 255, .16);
+  color: #f4e9d6; text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+.by3d-etikett.uthevet {
+  background: linear-gradient(180deg, #f5cd66, var(--gull2));
+  color: #20170a; border-color: #f9e3a8;
+}
+.by3d-verktoy { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.by3d-verktoy .ikonknapp { background: rgba(16, 14, 11, .72); backdrop-filter: blur(4px); }
+.by3d-hint {
+  position: absolute; left: 12px; bottom: 10px; font-size: 11px;
+  color: rgba(255, 255, 255, .7); background: rgba(10, 9, 7, .5);
+  padding: 3px 10px; border-radius: 999px; pointer-events: none;
+}
+
 /* ------------------------------------------------------------ RANGERING */
 .tavle-rad {
   display: flex; align-items: center; gap: 12px; padding: 11px 14px;
