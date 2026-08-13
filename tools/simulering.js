@@ -1,5 +1,5 @@
 /* Simuleringstest for OpenWorld-motoren.
- * Kjør:  node tools/simulering.js [antall_dager]
+ * Kjør:  node tools/simulering.js [antall_dager] [sekunder_per_steg]
  *
  * Laster spillfilene uten nettleser og spiller riket automatisk med en enkel
  * "bot" for å sjekke at balansen og progresjonen faktisk henger sammen.
@@ -60,7 +60,9 @@ OW.E.varsel = () => {};
 
 const s = OW.nyTilstand('Testrike');
 const DAGER = Number(process.argv[2] || 14);
-const STEG = 5;                       // sekunder per tikk
+/* Sekunder per tikk. Større steg = raskere kjøring, litt grovere oppløsning.
+   Lange kjøringer (30 dager+) går fint med 15–30. */
+const STEG = Number(process.argv[3] || (DAGER > 20 ? 20 : 5));
 const TOTALT = DAGER * 86400;
 
 /* Prioritert byggeliste – boten bygger det billigste av det den vil ha */
@@ -152,7 +154,7 @@ for (let t = 0; t < TOTALT; t += STEG) {
 const d = OW.E.beregn(s);
 const dag = n => (n / 86400).toFixed(1);
 
-console.log(`📅 Simulerte ${DAGER} dager med en enkel bot\n`);
+console.log(`📅 Simulerte ${DAGER} dager med en enkel bot (${STEG}s per steg)\n`);
 console.log('Epoker nådd:');
 console.log(merker.length ? merker.join('\n') : '  (ingen)');
 console.log(`

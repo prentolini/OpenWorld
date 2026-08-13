@@ -139,6 +139,17 @@ function finnChromium() {
     if (svar < 1) throw new Error('hendelsen ble ikke registrert');
   });
 
+  await steg('Hendelse som lukkes med kryss blokkerer ikke senere hendelser', async () => {
+    await side.evaluate(() => { OW.E.trekkHendelse(OW.App.s); OW.App.steg(); });
+    await side.waitForSelector('#modalLag:not(.skjult)', { timeout: 3000 });
+    await side.click('[data-akt="lukk-modal"]');
+    const aktiv = await side.evaluate(() => OW.App.s.hendelse);
+    if (aktiv) throw new Error('hendelsen ble hengende');
+    await side.evaluate(() => { OW.E.trekkHendelse(OW.App.s); OW.App.steg(); });
+    await side.waitForSelector('#modalLag:not(.skjult)', { timeout: 3000 });
+    await side.click('.modal-bunn .knapp');
+  });
+
   await steg('Lagring overlever ny innlasting', async () => {
     const navn = await side.evaluate(() => { OW.lagre(OW.App.s); return OW.App.s.navn; });
     await side.reload();

@@ -86,9 +86,24 @@ tools/
 ## Testing
 
 ```bash
-node tools/simulering.js 14     # simuler 14 dagers spilling + 15 kontroller
-node tools/nettlesertest.js     # 15 UI-tester i ekte nettleser (krever Playwright)
+node tools/simulering.js 14        # simuler 14 dagers spilling + 15 kontroller
+node tools/simulering.js 45 25     # 45 dager, 25 sekunder per steg (raskere)
+node tools/nettlesertest.js        # 16 UI-tester i ekte Chromium
 ```
+
+Slik ser progresjonen ut når boten spiller døgnet rundt (et menneske bruker
+grovt regnet 2–3 ganger så lang tid, siden offline-inntekten er begrenset):
+
+| Epoke | Nådd på |
+|---|---|
+| 🏘️ By | dag 0,0 |
+| 👑 Kongerike | dag 0,1 |
+| 🏛️ Imperium | dag 2,6 |
+| 🗺️ Kontinent | dag 23,2 |
+| 🌍 Verdensmakt | ikke nådd på 45 dager |
+
+Det er den formen vi vil ha: rask og belønnende de første timene, og deretter
+epoker som hver tar mangedobbelt så lang tid som den forrige.
 
 Simuleringen er ikke pynt — den har allerede avdekket tre reelle feil under
 utviklingen:

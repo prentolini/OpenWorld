@@ -337,6 +337,7 @@ OW.App = {
   },
 
   modal: function (tittel, kropp, knapper) {
+    OW.App._modalErHendelse = false;   /* visHendelse setter denne etterpå */
     document.getElementById('modalTittel').innerHTML = tittel;
     document.getElementById('modalKropp').innerHTML = kropp;
     OW.App._modalKnapper = [];
@@ -351,6 +352,16 @@ OW.App = {
 
   lukkModal: function () {
     document.getElementById('modalLag').classList.add('skjult');
+    /* Lukker du en hendelse med ✕ uten å velge, teller det som å la den ligge.
+       Uten dette ville hendelsen blitt hengende og blokkert alle senere. */
+    var s = OW.App.s;
+    if (OW.App._modalErHendelse && s && s.hendelse) {
+      s.hendelse = null;
+      s.nesteHendelse = Date.now() + 90000;
+      OW.App.toast('Du lot saken ligge. Rådgiverne sukker.', 'info');
+      OW.App.tegn(true);
+    }
+    OW.App._modalErHendelse = false;
   },
 
   /* ------------------------------------------------------------- SKJERMER */
@@ -411,10 +422,12 @@ OW.App = {
       };
     });
     OW.App.modal(h.ikon + ' ' + h.tittel, kropp, knapper);
+    OW.App._modalErHendelse = true;
   },
 
   svarHendelse: function (i) {
     var r = OW.E.velgHendelse(OW.App.s, OW.App.d, i);
+    OW.App._modalErHendelse = false;
     OW.App.lukkModal();
     if (!r) return;
     if (r.feil) { OW.App.toast(r.feil, 'feil'); OW.App._hendelseVist = null; OW.App.visHendelse(); return; }
