@@ -499,6 +499,30 @@ OW.E = {
     return k.epoke;
   },
 
+  /* --------------------------------------------------------------- BYDELER */
+
+  nesteBydel: function (s) {
+    return OW.BYDELER[s.bydeler || 0] || null;
+  },
+
+  bydelLast: function (s) {
+    var b = OW.E.nesteBydel(s);
+    if (!b) return { ok: false, grunn: 'Byen har vokst så langt kartet rekker' };
+    if (b.era > s.era) return { ok: false, grunn: 'Krever epoken ' + OW.EPOKER[b.era].navn };
+    if (!OW.E.harRaad(s, b.kost)) return { ok: false, grunn: 'Ikke nok materialer' };
+    return { ok: true, bydel: b };
+  },
+
+  kjopBydel: function (s) {
+    var sjekk = OW.E.bydelLast(s);
+    if (!sjekk.ok) return { ok: false, grunn: sjekk.grunn };
+    OW.E.betal(s, sjekk.bydel.kost);
+    s.bydeler = (s.bydeler || 0) + 1;
+    OW.E.sesongXp(s, 60);
+    OW.E.logg(s, sjekk.bydel.navn + ' er lagt til byen.', sjekk.bydel.ikon);
+    return { ok: true, bydel: sjekk.bydel };
+  },
+
   /* ---------------------------------------------------------- LAUG / VEIVALG */
 
   velgGratisLaug: function (s, id) {
@@ -569,6 +593,11 @@ OW.E = {
       if (!s.tech[tid] || !OW.TECH_INDEX[tid]) continue;
       techAntall++;
       leggTil(OW.TECH_INDEX[tid].bonus);
+    }
+
+    /* Bydeler du har bygget ut */
+    for (i = 0; i < Math.min(s.bydeler || 0, OW.BYDELER.length); i++) {
+      leggTil(OW.BYDELER[i].bonus);
     }
 
     /* Herskerens egenskap */
@@ -665,6 +694,7 @@ OW.E = {
       d.militaer * krigsbonus +
       s.pop * 0.4 +
       Math.sqrt(s.stat.handler) * 60 +
+      (s.bydeler || 0) * 900 +
       d.diplomati * 25 +
       s.varig.rikspoeng
     );

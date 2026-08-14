@@ -22,6 +22,7 @@ await p.evaluate(()=>{
   const s=OW.App.s; s.era=2; s.pop=320;
   s.res={tre:2e5,stein:2e5,mat:2e5,jern:2e5,gull:2e5,kunnskap:2e5};
   s.bygg={radhus:11,hus:10,tomrer:8,gard:7,steinbrudd:6,lager:7,marked:5,bibliotek:5,smie:4,festplass:3,kaserne:4,bymur:3,havn:3};
+  s.bydeler=3;
   s.ko=[{id:'katedral',niva:1,start:Date.now(),slutt:Date.now()+180000},
         {id:'marked',niva:6,start:Date.now(),slutt:Date.now()+90000}];
   OW.Scene._harRort=false; OW.App.tegn(true);
@@ -34,9 +35,9 @@ await p.screenshot({path:path.join(__dirname,'..','skjermbilder')+'/mobil-by.png
 await p.evaluate(()=>{OW.Scene.kamera.dist=17;OW.Scene.kamera.pitch=0.35;OW.Scene.kamera.yaw=3.9;OW.Scene._harRort=true;});
 await p.waitForTimeout(600);
 await p.screenshot({path:path.join(__dirname,'..','skjermbilder')+'/mobil-naerbilde.png'});
-const info=await p.evaluate(()=>({folk:OW.Scene.antallFolk, bygg:OW.Scene.antallBygg, terreng:OW.Scene.antall, kar:OW.App.s.karakter,
+const info=await p.evaluate(()=>({folk:OW.Scene.antallFolk, bygg:OW.Scene.antallBygg, terreng:OW.Scene.antall, bydeler:OW.App.s.bydeler, radius:Math.round(OW.Scene.byRadius), kar:OW.App.s.karakter,
   lykke:Math.round(OW.App.d.lykke), poptak:OW.App.d.popTak}));
-console.log('  Geometri:',info.bygg,'hjørner hus |',info.terreng,'terreng |',info.folk,'folk |','| karakter:',info.kar,'| lykke:',info.lykke,'| poptak:',info.poptak);
+console.log('  Geometri:',info.bygg,'hjørner hus |',info.terreng,'terreng |',info.folk,'folk |','| bydeler:',info.bydeler,'| radius:',info.radius,'| karakter:',info.kar,'| lykke:',info.lykke,'| poptak:',info.poptak);
 await b.close();
   console.log('  📸 Mobilbilder lagret i skjermbilder/');
 })();

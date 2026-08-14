@@ -131,6 +131,43 @@ OW.UI = {
         '<div class="kort aksent"><div class="kort-tekst">Du har nådd toppen av det kjente kartet. Sesonger, nye kart og nye teknologier venter i fremtidige oppdateringer.</div></div>';
     }
 
+    /* Bydeler – slik utvider du byen */
+    var neste = OW.E.nesteBydel(s);
+    var eide = Math.min(s.bydeler || 0, OW.BYDELER.length);
+    h += '<div class="seksjon-tittel">🏙️ Utvid byen <small>' + eide + ' av ' + OW.BYDELER.length +
+      ' bydeler</small><span class="strek"></span></div>';
+
+    if (neste) {
+      var bl = OW.E.bydelLast(s);
+      h += '<div class="kort' + (bl.ok ? ' aksent' : '') + '">' +
+        '<div class="kort-topp"><div class="kort-ikon">' + neste.ikon + '</div><div style="flex:1">' +
+        '<div class="kort-navn">' + neste.navn + '</div>' +
+        '<span class="merkelapp">Bydel ' + (eide + 1) + '</span></div></div>' +
+        '<div class="kort-tekst">' + neste.tekst + '</div>' +
+        OW.UI.bonusTekst(neste.bonus, null) + OW.UI.bydelEkstra(neste) +
+        OW.UI.kost(s, neste.kost) +
+        '<div class="liten" style="margin-bottom:8px">🧱 Skyver bymuren ett kvartal utover. ' +
+        'Kvartalet fylles med borgerhus etter hvert som folketallet vokser.</div>' +
+        '<button class="knapp ' + (bl.ok ? 'primar' : '') + '" style="width:100%" data-akt="kjop-bydel"' +
+        (bl.ok ? '' : ' disabled') + '>' +
+        (bl.ok ? 'Bygg ut ' + neste.navn + ' 🏗️' : bl.grunn) + '</button></div>';
+    } else {
+      h += '<div class="kort aksent"><div class="kort-tekst">Byen har vokst så langt kartet rekker. ' +
+        'Hele slettet er dekket av tak.</div></div>';
+    }
+
+    if (eide) {
+      h += '<div class="rute">';
+      for (i = 0; i < eide; i++) {
+        var bd = OW.BYDELER[i];
+        h += '<div class="kort" style="padding:10px"><div class="kort-topp" style="margin:0">' +
+          '<div class="kort-ikon" style="width:34px;height:34px;font-size:18px">' + bd.ikon + '</div>' +
+          '<div style="flex:1"><div class="kort-navn" style="font-size:13.5px">' + bd.navn + '</div>' +
+          OW.UI.bonusTekst(bd.bonus, null) + '</div></div></div>';
+      }
+      h += '</div>';
+    }
+
     /* Rikets vei (spesialisering) */
     if (s.era >= 2 || s.laug.length) {
       h += '<div class="seksjon-tittel">🧭 Rikets vei<span class="strek"></span><small>Velg én gratis — de andre kan låses opp</small></div>';
@@ -296,6 +333,14 @@ OW.UI = {
       h += '</div>';
     }
     return h;
+  },
+
+  /* Bydelsbonuser som ikke dekkes av den generelle bonuslisten */
+  bydelEkstra: function (bd) {
+    var biter = [];
+    if (bd.bonus.lager) biter.push('📦 +' + OW.F.tall(bd.bonus.lager) + ' lager');
+    if (bd.bonus.forskrabatt) biter.push('📚 −' + OW.F.pst(bd.bonus.forskrabatt) + ' forskning');
+    return biter.length ? '<div class="gir"><span>' + biter.join('</span><span>') + '</span></div>' : '';
   },
 
   bonusTekst: function (bon, d) {

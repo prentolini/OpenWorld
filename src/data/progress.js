@@ -204,5 +204,7 @@ OW.BRAGDER = [
   { id: 'keiser', navn: 'Keiser', ikon: '🏛️', tekst: 'Nå epoken Imperium.', sjekk: function (s) { return s.era >= 3; }, krystall: 50 },
   { id: 'verdensmakt', navn: 'Verdensmakt', ikon: '🌍', tekst: 'Nå den siste epoken.', sjekk: function (s) { return s.era >= 5; }, krystall: 200 },
   { id: 'rangert', navn: 'Nummer én', ikon: '🏆', tekst: 'Ligg øverst i Riksmesterskapet.', sjekk: function (s, d) { return d.rangering === 1; }, krystall: 60 },
+  { id: 'byplanlegger', navn: 'Byplanlegger', ikon: '🏙️', tekst: 'Bygg ut tre bydeler.', sjekk: function (s) { return (s.bydeler || 0) >= 3; }, krystall: 25 },
+  { id: 'metropol', navn: 'Metropol', ikon: '🌇', tekst: 'Bygg ut alle bydelene.', sjekk: function (s) { return (s.bydeler || 0) >= OW.BYDELER.length; }, krystall: 90 },
   { id: 'tusenkunstner', navn: 'Tusenkunstner', ikon: '✨', tekst: 'Ha minst ett nivå i 15 ulike bygninger.', sjekk: function (s, d) { return d.byggTyper >= 15; }, krystall: 35 }
 ];

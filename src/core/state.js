@@ -19,6 +19,7 @@ OW.nyTilstand = function (navn) {
     krystall: 20,
 
     bygg: {},                 // { byggId: niva }
+    bydeler: 0,               // antall kjøpte bydeler – byen vokser utover
     ko: [],                   // [{ id, niva, start, slutt }]
     kjopteKoer: 0,            // permanent ekstra kø kjøpt i butikk
     leidKoTil: 0,             // midlertidig ekstra kø (krystaller)

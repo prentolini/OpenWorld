@@ -296,6 +296,7 @@ OW.App = {
       document.getElementById('by3d').classList.toggle('skjult', !vis3d);
       OW.Scene.settSynlig(vis3d);
       if (vis3d) {
+        OW.Scene.popTak = d.popTak;
         OW.Scene.oppdaterBy(s);
         OW.Scene.settFolk(s.pop, kar);
       }
@@ -459,6 +460,21 @@ OW.App = {
 
       case 'velg-laug':
         OW.App.bekreftLaug(el.dataset.id);
+        break;
+
+      case 'kjop-bydel':
+        var bres = OW.E.kjopBydel(s);
+        if (!bres.ok) OW.App.toast(bres.grunn, 'feil');
+        else {
+          OW.App.modal(bres.bydel.ikon + ' ' + bres.bydel.navn,
+            '<p>' + bres.bydel.tekst + '</p>' +
+            '<div class="historie">Bymuren flyttes utover, og et nytt kvartal ligger klart. ' +
+            'Det fylles med hus etter hvert som flere flytter inn i byen din.</div>' +
+            '<div class="kort" style="margin-top:12px"><b>Bydelen gir</b>' +
+            OW.UI.bonusTekst(bres.bydel.bonus, null) + OW.UI.bydelEkstra(bres.bydel) + '</div>',
+            [{ tekst: 'Se på byen', klasse: 'primar' }]);
+        }
+        OW.App.tegn(true);
         break;
 
       case 'era-opp':

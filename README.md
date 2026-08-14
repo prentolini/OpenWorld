@@ -49,6 +49,30 @@ korte midt på dagen.
 * Landskap med innsjø, strandkant, blandingsskog, steiner og snødekte fjell i
   horisonten
 
+## 🏙️ Utvid byen
+
+Kjernen av byen vokser av seg selv når du låser opp nye bygningstyper. **Bydelene
+er det du selv velger å bygge.** Hver av de åtte skyver bymuren ett kvartal
+utover, gir riket en varig fordel — og fylles med borgerhus etter hvert som
+folketallet vokser.
+
+Det er den koblingen som gjør det fint: innbyggertallet ditt er ikke lenger bare
+et tall i toppen av skjermen. Bygger du ut Havnekvarteret mens byen er halvfull,
+står det glissent med hager og opplagsplasser mellom husene. Fyller du opp
+befolkningen, tetner kvartalet seg til med tak. De innerste bydelene er tettest,
+og hver tomt har sin egen tetthet, så det aldri blir et rutenett av like hus.
+
+| Bydel | Fra epoke | Gir blant annet |
+|---|---|---|
+| 🔨 Håndverkerkvarteret | By | +10 % tre og stein |
+| ⚓ Havnekvarteret | Kongerike | +1 handelsrute, +12 % gull |
+| 📚 Lærdomskvarteret | Kongerike | +18 % kunnskap |
+| 🏪 Storgaten | Imperium | +20 % gull, +10 % handel |
+| 🧱 Murbyen | Imperium | +18 % befolkningstak |
+| 🏘️ Forstedene | Kontinent | +6 % all produksjon |
+| 🌆 Ytterbyen | Kontinent | +8 % all produksjon |
+| 🌇 Storbyen | Verdensmakt | +12 % all produksjon |
+
 ## 📱 En app du kan legge på hjemskjermen
 
 Byen fyller skjermen, fanene ligger som en bunnmeny med tommelvennlige flater,
@@ -90,10 +114,11 @@ kode du kan kopiere for å flytte riket til en annen maskin.
 | 📜 **18 oppdrag** | ✅ | Hovedhistorie i åtte kapitler med historietekst |
 | 🎲 **11 hendelser** | ✅ | Dilemmaer med to valg og ekte konsekvenser |
 | 🏆 **Riksmesterskap** | ✅ | Seks rivaler som vokser mens du sover |
-| 🏅 **20 bragder** | ✅ | Gir krystaller, som også kjøpes i butikken |
+| 🏅 **22 bragder** | ✅ | Gir krystaller, som også kjøpes i butikken |
 | 🌅 **Sesong (25 nivåer)** | ✅ | Hele sporet kan spilles gratis |
 | 🧭 **Spesialisering** | ✅ (én vei) | Handel, krig eller kunnskap – permanent valg |
 | 🎭 **8 herskere** | ✅ | Egen egenskap, startgave og en figur som går i byen |
+| 🏙️ **8 bydeler** | ✅ | Utvider byen fysisk og fylles med hus når folketallet vokser |
 
 ## Betalingsmodellen
 
@@ -128,6 +153,7 @@ src/data/             alt innhold – rediger her for å legge til nytt
   progress.js           oppdrag, laug, sesong, bragder
   shop.js               butikkvarer og priser
   karakterer.js         de åtte herskerne med egenskaper og 3D-farger
+  bydeler.js            byutvidelsene og hva de gir
 src/core/
   format.js             tallformatering på norsk
   state.js              tilstand, lagring, import/eksport
@@ -160,7 +186,7 @@ tools/
 ```bash
 node tools/simulering.js 14        # simuler 14 dagers spilling + 15 kontroller
 node tools/simulering.js 45 25     # 45 dager, 25 sekunder per steg (raskere)
-node tools/nettlesertest.js        # 25 UI-tester i ekte Chromium, inkl. 3D
+node tools/nettlesertest.js        # 26 UI-tester i ekte Chromium, inkl. 3D
 node tools/apptest.js              # 8 apptester: manifest, ikoner, offline-drift
 node tools/mobilbilder.js          # skjermbilder i mobilformat
 node tools/server.js               # lokal server – åpne adressen på mobilen

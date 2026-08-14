@@ -7,7 +7,7 @@
  * Bytt VERSJON når du endrer filene; da lastes alt ned på nytt og de gamle
  * bufferne ryddes bort.
  */
-const VERSJON = 'openworld-v1';
+const VERSJON = 'openworld-v2';
 
 const FILER = [
   './',
@@ -26,6 +26,7 @@ const FILER = [
   './src/data/progress.js',
   './src/data/shop.js',
   './src/data/karakterer.js',
+  './src/data/bydeler.js',
   './src/core/state.js',
   './src/core/engine.js',
   './src/core/payments.js',

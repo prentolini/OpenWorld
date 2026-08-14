@@ -225,9 +225,12 @@ OW.Scene = {
 
   /* -------------------------------------------------------------- GEOMETRI */
   signaturFor: function (s) {
-    var d = [s.era];
+    var d = [s.era, s.bydeler || 0];
     OW.BYGG.forEach(function (b) { d.push(s.bygg[b.id] || 0); });
     for (var i = 0; i < s.ko.length; i++) d.push('k' + s.ko[i].id);
+    /* Bydelene fylles med hus etter folketallet. Vi bygger om i trinn på 5 %,
+       ellers ville byen blitt regnet om for hver eneste nye innbygger. */
+    d.push('f' + Math.round(OW.klem(s.pop / Math.max(1, OW.Scene.popTak || 1), 0, 1) * 20));
     return d.join(',');
   },
 
@@ -236,6 +239,7 @@ OW.Scene = {
     if (!tving && sig === OW.Scene.signatur) return;
     OW.Scene.signatur = sig;
 
+    OW.By3D._popTak = OW.Scene.popTak || s.pop;
     var res = OW.By3D.byggBy(s);
     OW.Scene.merker = res.merker;
     OW.Scene.byRadius = res.byRadius;

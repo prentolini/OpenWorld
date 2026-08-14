@@ -29,7 +29,7 @@ OW.By3D.TOMT = 4.4;       // størrelsen på selve tomta (resten blir gate)
 OW.By3D.tomter = function () {
   if (OW.By3D._tomter) return OW.By3D._tomter;
   var liste = [{ x: 0, z: 0 }];
-  for (var r = 1; r <= 4; r++) {
+  for (var r = 1; r <= 9; r++) {
     var ring = [];
     for (var x = -r; x <= r; x++) {
       for (var z = -r; z <= r; z++) {
@@ -518,6 +518,89 @@ OW.By3D.tegnTre = function (m, x, z, fro) {
   }
 };
 
+/* ---------------------------------------------------------------- BYDELER */
+/* Enkle borgerhus. Bevisst lettere enn hovedbygningene: en bydel kan romme
+   hundrevis av dem, så hvert hus må koste lite geometri. */
+OW.By3D.tegnBorgerhus = function (m, x, z, fro, storByen) {
+  var pale = [[0.84, 0.79, 0.68], [0.78, 0.72, 0.62], [0.72, 0.68, 0.60], [0.80, 0.74, 0.64]];
+  var tak = [[0.48, 0.28, 0.23], [0.42, 0.32, 0.28], [0.38, 0.34, 0.32], [0.52, 0.34, 0.25]];
+  var vegg = OW.By3D.varier(pale[Math.floor(OW.fro(fro) * 4) % 4], fro + 1, 0.05);
+  var takF = OW.By3D.varier(tak[Math.floor(OW.fro(fro * 2.3) * 4) % 4], fro + 2, 0.05);
+
+  var b = 0.72 + OW.fro(fro * 3.1) * 0.4;
+  var d = b * (0.8 + OW.fro(fro * 4.7) * 0.3);
+  var et = storByen ? 2 + Math.floor(OW.fro(fro * 5.9) * 2) : 1 + Math.floor(OW.fro(fro * 5.9) * 2);
+  var eh = 0.52 + OW.fro(fro * 6.3) * 0.12;
+
+  m.settRot((OW.fro(fro * 7.1) - 0.5) * 0.5, x, z);
+  m.kasse(x, 0.15, z, b + 0.12, 0.1, d + 0.12, [0.5, 0.48, 0.44], { mork: 0.3 });
+  m.kasse(x, 0.25, z, b, eh * et, d, vegg, { mork: 0.22, utenTopp: true });
+
+  /* én vindusrekke mot gata holder – huset skal leses på avstand */
+  for (var e = 0; e < et; e++) {
+    OW.By3D.tegnVindu(m, x, 0.25 + e * eh + eh * 0.34, z + d / 2, 0.2, Math.min(0.26, eh * 0.4), 1,
+      [0.34, 0.25, 0.19]);
+  }
+  m.saltak(x, 0.25 + eh * et, z, b * 1.16, eh * 0.62, d * 1.16, takF);
+  if (OW.fro(fro * 8.8) > 0.6) {
+    m.kasse(x + b * 0.28, 0.25 + eh * et, z, 0.16, eh * 0.75, 0.16, [0.45, 0.33, 0.28], { mork: 0.2 });
+  }
+  m.settRot(0);
+  return 0.25 + eh * et + eh * 0.62;
+};
+
+/* Fyller bydelsringene. tetthet 0–1 følger hvor full byen er av folk. */
+OW.By3D.tegnBydeler = function (m, s, p, kjerneRing) {
+  var antall = Math.min(s.bydeler || 0, OW.BYDELER.length);
+  if (!antall) return;
+
+  var tomter = OW.By3D.tomter();
+  var storByen = (s.bydeler || 0) >= 4;
+
+  for (var i = 0; i < tomter.length; i++) {
+    var t = tomter[i];
+    var ring = Math.max(Math.abs(t.x), Math.abs(t.z));
+    if (ring <= kjerneRing || ring > kjerneRing + antall) continue;
+
+    var x = t.x * OW.By3D.CELLE, z = t.z * OW.By3D.CELLE;
+    var fro = (t.x + 40) * 17.3 + (t.z + 40) * 5.7;
+
+    /* De innerste bydelene er tettest bebygd, som i en ekte by – og hver
+       tomt har sin egen tetthet, ellers blir hele bydelen et rutenett av
+       like hus. */
+    var alder = 1 - (ring - kjerneRing - 1) / Math.max(1, antall);
+    var tetthet = OW.klem(OW.By3D._folketetthet * (0.5 + alder * 0.7), 0, 1);
+    var lokal = 0.35 + OW.fro(fro * 1.31) * 1.35;
+
+    var hus = Math.round(tetthet * lokal * 4);
+    if (hus > 4) hus = 4;
+    if (hus < 1) {
+      /* tom tomt: hage eller opplagsplass i stedet for hus */
+      if (OW.fro(fro * 2.9) > 0.5) {
+        for (var g = 0; g < 3; g++) {
+          m.sylinder(x - 1 + g * 1.0, 0.15, z + (OW.fro(fro + g) - 0.5) * 2,
+            0.4, 0.5, OW.By3D.varier([0.26, 0.40, 0.22], fro + g, 0.06), 6, 0.15);
+        }
+      }
+      continue;
+    }
+
+    var plasser = OW.By3D.KLYNGE[hus - 1];
+    for (var h = 0; h < plasser.length; h++) {
+      OW.By3D.tegnBorgerhus(m,
+        x + plasser[h][0] * 1.15 + (OW.fro(fro + h * 3.3) - 0.5) * 0.3,
+        z + plasser[h][1] * 1.15 + (OW.fro(fro + h * 4.9) - 0.5) * 0.3,
+        fro + h * 11.7, storByen);
+    }
+
+    /* en brønn i ny og ne */
+    if (OW.fro(fro * 6.1) > 0.88) {
+      m.sylinder(x + 1.6, 0.15, z - 1.6, 0.34, 0.4, [0.55, 0.53, 0.49], 8);
+      m.sylinder(x + 1.6, 0.55, z - 1.6, 0.1, 0.55, [0.4, 0.31, 0.22], 5);
+    }
+  }
+};
+
 /* -------------------------------------------------------- HELE BYEN SAMLET */
 OW.By3D.byggBy = function (s) {
   var m = new OW.Mesh();          // terreng, vann og himmel
@@ -534,7 +617,11 @@ OW.By3D.byggBy = function (s) {
   for (var q = 0; q < s.ko.length; q++) {
     ytterst = Math.max(ytterst, OW.By3D.tomtFor(s.ko[q].id).ring);
   }
-  var byRadius = (ytterst + 0.62) * OW.By3D.CELLE;
+  /* Kjernen er så stor som bygningstomtene krever. Bydelene legger seg
+     utenpå, én ring per bydel du har kjøpt. */
+  var kjerneRing = ytterst;
+  var byRing = kjerneRing + Math.min(s.bydeler || 0, OW.BYDELER.length);
+  var byRadius = (byRing + 0.62) * OW.By3D.CELLE;
 
   OW.By3D.tegnTerreng(m, mb, s, p, byRadius);
 
@@ -555,9 +642,13 @@ OW.By3D.byggBy = function (s) {
       bygger: true, x: kt.x, y: 3.2, z: kt.z });
   }
 
+  /* Hvor full byen er av folk avgjør hvor tett bydelene er bebygd */
+  OW.By3D._folketetthet = OW.klem(s.pop / Math.max(1, OW.By3D._popTak || s.pop), 0, 1);
+  OW.By3D.tegnBydeler(mb, s, p, kjerneRing);
+
   if (s.bygg.bymur > 0) OW.By3D.tegnBymur(mb, s.bygg.bymur, byRadius + OW.By3D.CELLE * 0.55, p);
 
-  return { mesh: m, bygg: mb, merker: merker, byRadius: byRadius };
+  return { mesh: m, bygg: mb, merker: merker, byRadius: byRadius, kjerneRing: kjerneRing };
 };
 
 OW.By3D.tegnStillas = function (m, x, z, tomTomt) {

@@ -171,6 +171,32 @@ function finnChromium() {
     if (f.merker < 5) throw new Error('for få etiketter: ' + f.merker);
   });
 
+  await steg('Bydel kan kjøpes og gjør byen større', async () => {
+    await side.click('#fane-by');
+    await side.waitForTimeout(300);
+    const for_ = await side.evaluate(() => ({
+      bydeler: OW.App.s.bydeler,
+      radius: OW.Scene.byRadius,
+      bygg: OW.Scene.antallBygg,
+      poptak: OW.App.d.popTak
+    }));
+    await side.click('[data-akt="kjop-bydel"]');
+    await side.waitForSelector('#modalLag:not(.skjult)', { timeout: 3000 });
+    await side.click('.modal-bunn .knapp.primar');
+    await side.waitForTimeout(600);
+    const etter = await side.evaluate(() => ({
+      bydeler: OW.App.s.bydeler,
+      radius: OW.Scene.byRadius,
+      bygg: OW.Scene.antallBygg,
+      poptak: OW.App.d.popTak
+    }));
+    if (etter.bydeler !== for_.bydeler + 1) throw new Error('bydelen ble ikke registrert');
+    if (!tre_d) return;
+    if (etter.radius <= for_.radius) throw new Error('byen ble ikke større: ' + for_.radius + ' → ' + etter.radius);
+    if (etter.bygg <= for_.bygg) throw new Error('ingen nye hus i bydelen');
+    if (etter.poptak <= for_.poptak) throw new Error('befolkningstaket økte ikke');
+  });
+
   await steg('Skygger og hus tegnes uten WebGL-feil', async () => {
     if (!tre_d) return;
     await side.waitForTimeout(400);

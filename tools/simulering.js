@@ -18,6 +18,7 @@ const filer = [
   'src/data/progress.js',
   'src/data/shop.js',
   'src/data/karakterer.js',
+  'src/data/bydeler.js',
   'src/core/state.js',
   'src/core/engine.js',
   'src/core/payments.js'
@@ -136,6 +137,9 @@ for (let t = 0; t < TOTALT; t += STEG) {
   if (s.hendelse) OW.E.velgHendelse(s, d, 0);
   else if (naa >= s.nesteHendelse) OW.E.trekkHendelse(s);
 
+  /* Utvid byen når vi har råd */
+  if (OW.E.bydelLast(s).ok) OW.E.kjopBydel(s);
+
   /* Oppdrag og epoker */
   if (OW.E.oppdragKlart(s, d)) OW.E.hentOppdrag(s, d);
   if (s.era === 2 && !s.gratisLaugBrukt) OW.E.velgGratisLaug(s, 'handel');
@@ -165,6 +169,7 @@ console.log(`
   Tilfredshet .......... ${Math.round(d.lykke)}
   Arbeidskraft ......... ${(d.eff * 100).toFixed(0)} %
   Bygningsnivåer ....... ${d.byggNivaTotalt} fordelt på ${d.byggTyper} typer
+  Bydeler .............. ${s.bydeler} / ${OW.BYDELER.length}
   Høyeste nivå ......... ${d.hoyesteNiva}
   Forskning ............ ${d.techAntall} / ${OW.TECH.length}
   Områder .............. ${d.omraderEid} / ${OW.OMRADER.length}
