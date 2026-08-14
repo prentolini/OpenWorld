@@ -49,12 +49,19 @@ korte midt på dagen.
 * Landskap med innsjø, strandkant, blandingsskog, steiner og snødekte fjell i
   horisonten
 
-## 📱 Laget for mobil
+## 📱 En app du kan legge på hjemskjermen
 
 Byen fyller skjermen, fanene ligger som en bunnmeny med tommelvennlige flater,
 og panelene kommer opp som en skuff du drar over byen. Portrettet ditt og
 byggekøen ligger som brikker rett oppå bybildet. Alt fungerer like godt i en
 nettleser på PC.
+
+Spillet **installeres på hjemskjermen** på både iPhone og Android: eget ikon,
+fullskjerm uten nettleserlinje, og **spillbart helt uten nett**. Ingen app-butikk
+nødvendig. Hele appen er 391 kB.
+
+👉 **[APP.md](APP.md)** forklarer hvordan du får den på telefonen — og hva som
+skal til for ekte apper i App Store og Google Play.
 
 ## Kom i gang
 
@@ -134,10 +141,18 @@ src/by3d/               3D-byen – ingen tredjepartsbibliotek
 src/ui/
   panels.js             én funksjon per fane
   app.js                spilløkke, klikk, modaler, varsler
+manifest.webmanifest  appnavn, ikoner og farger til hjemskjermen
+sw.js                 offline-buffer – spillet virker uten nett
+ikoner/               app-ikoner, laget av tools/lagikoner.js
+capacitor.config.json oppsett for ekte App Store-/Play-bygg
 tools/
   simulering.js         spiller spillet automatisk og sjekker balansen
   nettlesertest.js      klikker seg gjennom spillet i ekte Chromium
+  apptest.js            manifest, ikoner og at spillet starter uten nett
   mobilbilder.js        tar skjermbilder i mobilformat (390×844)
+  lagikoner.js          tegner app-ikonene som SVG og fotograferer dem
+  lagdist.js            samler spillet i dist/ for utlegging
+  server.js             lokal webserver for testing på ekte mobil
 ```
 
 ## Testing
@@ -146,7 +161,9 @@ tools/
 node tools/simulering.js 14        # simuler 14 dagers spilling + 15 kontroller
 node tools/simulering.js 45 25     # 45 dager, 25 sekunder per steg (raskere)
 node tools/nettlesertest.js        # 25 UI-tester i ekte Chromium, inkl. 3D
+node tools/apptest.js              # 8 apptester: manifest, ikoner, offline-drift
 node tools/mobilbilder.js          # skjermbilder i mobilformat
+node tools/server.js               # lokal server – åpne adressen på mobilen
 ```
 
 Slik ser progresjonen ut når boten spiller døgnet rundt (et menneske bruker

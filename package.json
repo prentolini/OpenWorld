@@ -1,0 +1,24 @@
+{
+  "name": "openworld",
+  "version": "1.0.0",
+  "description": "OpenWorld – bygg en landsby om til en verdensmakt",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dist": "node tools/lagdist.js",
+    "ikoner": "node tools/lagikoner.js",
+    "test": "node tools/simulering.js 3 && node tools/nettlesertest.js && node tools/apptest.js",
+    "sim": "node tools/simulering.js",
+    "server": "node tools/server.js",
+    "app:sync": "npm run dist && npx cap sync",
+    "app:android": "npm run app:sync && npx cap open android",
+    "app:ios": "npm run app:sync && npx cap open ios"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/ios": "^6.2.0",
+    "playwright-core": "^1.49.0"
+  }
+}

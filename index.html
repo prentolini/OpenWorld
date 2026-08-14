@@ -6,6 +6,16 @@
 <title>OpenWorld — Bygg ditt imperium</title>
 <meta name="description" content="Strategispill: bygg en landsby om til en verdensmakt.">
 <link rel="stylesheet" href="styles.css">
+
+<!-- Installerbar app på hjemskjermen (iOS og Android) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#12100e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OpenWorld">
+<link rel="apple-touch-icon" href="ikoner/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="ikoner/ikon-192.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏰</text></svg>">
 </head>
 <body>
@@ -110,6 +120,16 @@
     <div class="modal-kropp" id="modalKropp"></div>
     <div class="modal-bunn" id="modalBunn"></div>
   </div>
+</div>
+
+<div id="installBanner" class="install-banner skjult">
+  <span class="install-ikon">📲</span>
+  <div class="install-tekst">
+    <b>Legg OpenWorld på hjemskjermen</b>
+    <small id="installHjelp">Spill uten nett, i fullskjerm, som en vanlig app.</small>
+  </div>
+  <button class="knapp mini primar" data-akt="installer">Installer</button>
+  <button class="ikonknapp" data-akt="lukk-install" title="Ikke nå">✕</button>
 </div>
 
 <div id="toaster"></div>

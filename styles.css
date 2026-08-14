@@ -518,3 +518,32 @@ input[type=text]:focus, textarea:focus { outline: 2px solid var(--gull2); outlin
   .ikonknapp { width: 40px; height: 40px; }
   .modal-bunn .knapp { min-height: 46px; }
 }
+
+/* ------------------------------------------------------------- INSTALLASJON */
+.install-banner {
+  position: fixed; left: 10px; right: 10px; z-index: 45;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 11px;
+  padding: 11px 12px; border-radius: 14px;
+  background: linear-gradient(180deg, #2f2820, #221c16);
+  border: 1px solid var(--gull2); box-shadow: var(--skygge);
+  animation: inn .25s ease-out;
+}
+.install-ikon { font-size: 26px; }
+.install-tekst { flex: 1; min-width: 0; line-height: 1.3; }
+.install-tekst b { display: block; font-size: 13.5px; }
+.install-tekst small { color: var(--tekst2); font-size: 11.5px; }
+
+/* I appmodus skal innholdet klare seg unna hakket i skjermen */
+@media (display-mode: standalone) {
+  #app { padding-top: calc(6px + env(safe-area-inset-top, 0px)); }
+  #bunn { padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* Appfølelse: ingen gummistrikk-scroll, ingen tekstmarkering ved dobbelttrykk */
+@media (max-width: 760px) {
+  html, body { overscroll-behavior: none; }
+  #app { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+  #app input, #app textarea { -webkit-user-select: text; user-select: text; }
+  .install-banner { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+}

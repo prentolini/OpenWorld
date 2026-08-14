@@ -54,11 +54,97 @@ OW.App = {
     });
 
     OW.E.varsel = OW.App.toast;
+    OW.App.startInstallasjon();
     document.addEventListener('click', OW.App.klikk);
     window.addEventListener('beforeunload', function () { if (OW.App.s) OW.lagre(OW.App.s); });
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden && OW.App.s) OW.App.taIgjen();
     });
+  },
+
+  /* ------------------------------------------------- APP PÅ HJEMSKJERMEN */
+
+  erInstallert: function () {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true;
+  },
+
+  erIOS: function () {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+           (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  },
+
+  startInstallasjon: function () {
+    /* Service worker gjør spillet spillbart uten nett. Krever https eller
+       localhost – åpner du filen direkte fra disk, hopper vi over den. */
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      navigator.serviceWorker.register('sw.js').then(function (reg) {
+        reg.addEventListener('updatefound', function () {
+          var ny = reg.installing;
+          if (!ny) return;
+          ny.addEventListener('statechange', function () {
+            if (ny.state === 'installed' && navigator.serviceWorker.controller) {
+              OW.App.toast('✨ Ny versjon lastet ned. Start spillet på nytt for å ta den i bruk.', 'ok');
+            }
+          });
+        });
+      }).catch(function (e) { console.warn('Service worker: ' + e.message); });
+    }
+
+    if (OW.App.erInstallert()) return;
+
+    /* Android/Chrome gir oss en ekte installasjonsdialog å utløse. */
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      OW.App._installHendelse = e;
+      OW.App.visInstallBanner();
+    });
+
+    /* iOS har ingen slik dialog – der må brukeren gjennom Del-menyen. */
+    if (OW.App.erIOS() && !localStorage.getItem('openworld_install_skjult')) {
+      setTimeout(function () {
+        if (!OW.App.erInstallert()) OW.App.visInstallBanner(true);
+      }, 45000);
+    }
+  },
+
+  visInstallBanner: function (ios) {
+    if (localStorage.getItem('openworld_install_skjult')) return;
+    var el = document.getElementById('installBanner');
+    if (!el) return;
+    if (ios) {
+      document.getElementById('installHjelp').textContent =
+        'Trykk Del-knappen nederst, og velg «Legg til på Hjem-skjerm».';
+      el.querySelector('[data-akt="installer"]').textContent = 'Vis meg';
+    }
+    el.classList.remove('skjult');
+  },
+
+  installer: function () {
+    var e = OW.App._installHendelse;
+    if (e) {
+      e.prompt();
+      e.userChoice.then(function (svar) {
+        OW.App._installHendelse = null;
+        document.getElementById('installBanner').classList.add('skjult');
+        if (svar.outcome === 'accepted') OW.App.toast('🏰 OpenWorld ligger nå på hjemskjermen din!', 'bragd');
+      });
+      return;
+    }
+    /* iOS og alt annet: forklar hvordan det gjøres for hånd */
+    OW.App.modal('📲 Legg OpenWorld på hjemskjermen',
+      (OW.App.erIOS()
+        ? '<div class="kort"><b>På iPhone og iPad (Safari)</b><ul class="punktliste" style="margin-top:8px">' +
+          '<li>Trykk <b>Del</b>-knappen — firkanten med pil opp, nederst på skjermen.</li>' +
+          '<li>Bla ned og velg <b>Legg til på Hjem-skjerm</b>.</li>' +
+          '<li>Trykk <b>Legg til</b> øverst til høyre.</li></ul>' +
+          '<p class="finstilt">Må gjøres i Safari. Chrome på iPhone har ikke denne muligheten.</p></div>'
+        : '<div class="kort"><b>På Android (Chrome)</b><ul class="punktliste" style="margin-top:8px">' +
+          '<li>Trykk menyen med de tre prikkene øverst til høyre.</li>' +
+          '<li>Velg <b>Legg til på startskjerm</b> eller <b>Installer app</b>.</li></ul></div>') +
+      '<p style="margin-top:12px">Da får du et ikon på hjemskjermen, spillet åpner i fullskjerm uten ' +
+      'nettleserlinje, og det virker <b>helt uten nett</b>.</p>',
+      [{ tekst: 'Skjønner', klasse: 'primar' }]);
   },
 
   tegnKarakterValg: function () {
@@ -395,6 +481,15 @@ OW.App = {
       case 'kamera-ut': OW.Scene._harRort = true; OW.Scene.zoom(1.22); break;
       case 'kamera-null': OW.Scene.nullstillKamera(); break;
 
+      case 'installer':
+        OW.App.installer();
+        break;
+
+      case 'lukk-install':
+        document.getElementById('installBanner').classList.add('skjult');
+        try { localStorage.setItem('openworld_install_skjult', '1'); } catch (e2) { /* ignorert */ }
+        break;
+
       case 'karakterkort':
         OW.App.visKarakter();
         break;
@@ -660,6 +755,9 @@ OW.App = {
       '<div class="info-rad"><span>Epoke</span><span>' + OW.EPOKER[s.era].navn + '</span></div>' +
       '<div class="info-rad"><span>Spilletid</span><span>' + OW.F.tid(s.stat.spilletid) + '</span></div>' +
       '<div class="info-rad"><span>Grunnlagt</span><span>' + new Date(s.opprettet).toLocaleDateString('nb-NO') + '</span></div></div>' +
+      (OW.App.erInstallert()
+        ? '<div class="gir" style="margin-top:10px"><span>📲 Kjører som app på hjemskjermen</span></div>'
+        : '<button class="knapp" style="width:100%;margin-top:10px" data-akt="installer">📲 Legg spillet på hjemskjermen</button>') +
       '<p class="finstilt" style="margin-top:12px">Spillet lagres automatisk i denne nettleseren. Kopier koden under for å ta med riket til en annen maskin.</p>' +
       '<textarea id="lagringsFelt" rows="3" readonly onclick="this.select()">' + OW.eksporter(s) + '</textarea>' +
       '<p class="finstilt">Lim inn en kode og trykk «Importer» for å laste inn et annet rike.</p>',

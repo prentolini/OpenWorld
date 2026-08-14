@@ -1,0 +1,16 @@
+{
+  "appId": "no.openworld.imperium",
+  "appName": "OpenWorld",
+  "webDir": "dist",
+  "backgroundColor": "#12100e",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "always",
+    "backgroundColor": "#12100e"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
