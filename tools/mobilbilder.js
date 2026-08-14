@@ -34,9 +34,9 @@ await p.screenshot({path:path.join(__dirname,'..','skjermbilder')+'/mobil-by.png
 await p.evaluate(()=>{OW.Scene.kamera.dist=17;OW.Scene.kamera.pitch=0.35;OW.Scene.kamera.yaw=3.9;OW.Scene._harRort=true;});
 await p.waitForTimeout(600);
 await p.screenshot({path:path.join(__dirname,'..','skjermbilder')+'/mobil-naerbilde.png'});
-const info=await p.evaluate(()=>({folk:OW.Scene.antallFolk, kar:OW.App.s.karakter,
+const info=await p.evaluate(()=>({folk:OW.Scene.antallFolk, bygg:OW.Scene.antallBygg, terreng:OW.Scene.antall, kar:OW.App.s.karakter,
   lykke:Math.round(OW.App.d.lykke), poptak:OW.App.d.popTak}));
-console.log('  Folk i gatene (hjørner):',info.folk,'| karakter:',info.kar,'| lykke:',info.lykke,'| poptak:',info.poptak);
+console.log('  Geometri:',info.bygg,'hjørner hus |',info.terreng,'terreng |',info.folk,'folk |','| karakter:',info.kar,'| lykke:',info.lykke,'| poptak:',info.poptak);
 await b.close();
   console.log('  📸 Mobilbilder lagret i skjermbilder/');
 })();

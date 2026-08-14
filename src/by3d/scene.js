@@ -49,7 +49,8 @@ OW.Scene = {
     };
     OW.Scene.uni = {};
     ['uProj', 'uView', 'uSol', 'uSolFarge', 'uFyll', 'uFyllFarge', 'uAmbient', 'uTid', 'uNatt',
-     'uHimmelTint', 'uTakeFarge', 'uTakeNaer', 'uTakeFjern'].forEach(function (n) {
+     'uHimmelTint', 'uTakeFarge', 'uTakeNaer', 'uTakeFjern',
+     'uSkygge', 'uSkyggeSol', 'uAlfa'].forEach(function (n) {
       OW.Scene.uni[n] = gl.getUniformLocation(p, n);
     });
 
@@ -63,8 +64,15 @@ OW.Scene = {
       pos: gl.createBuffer(), nor: gl.createBuffer(),
       farge: gl.createBuffer(), flagg: gl.createBuffer()
     };
+    /* Husene ligger for seg selv, siden de også tegnes som skygger */
+    OW.Scene.buffereBygg = {
+      pos: gl.createBuffer(), nor: gl.createBuffer(),
+      farge: gl.createBuffer(), flagg: gl.createBuffer()
+    };
     OW.Scene.antall = 0;
+    OW.Scene.antallBygg = 0;
     OW.Scene.antallFolk = 0;
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
@@ -244,6 +252,13 @@ OW.Scene = {
     last(b.flagg, m.flagg);
     OW.Scene.antall = m.antall();
 
+    var mb = res.bygg, bb = OW.Scene.buffereBygg;
+    last(bb.pos, mb.pos);
+    last(bb.nor, mb.nor);
+    last(bb.farge, mb.farge);
+    last(bb.flagg, mb.flagg);
+    OW.Scene.antallBygg = mb.antall();
+
     if (!OW.Scene._harRort) OW.Scene.nullstillKamera();
   },
 
@@ -280,13 +295,15 @@ OW.Scene = {
     var solVinkel = dogn * Math.PI * 2;
     var solHoyde = Math.sin(solVinkel);
     var natt = OW.klem((0.16 - solHoyde) * 2.2, 0, 1);
-    /* Sola følger kameraet med litt forskyvning. Ellers ser vi alltid
-       skyggesiden av byen, og alt blir svarte silhuetter. Døgnsyklusen
-       styrer høyden og fargen i stedet for retningen. */
-    var solAz = OW.Scene.kamera.yaw + 0.62;
-    var solY = 0.34 + 0.42 * Math.max(0, solHoyde);
-    var sol = OW.M.normaliser([Math.sin(solAz) * 0.85, solY, Math.cos(solAz) * 0.85]);
-    var fyll = OW.M.normaliser([-sol[0], 0.4, -sol[2]]);
+    /* Sola står fast i verden og går sin runde over himmelen. Det er det
+       skyggene krever – en sol som følger kameraet ville dratt skyggene
+       rundt hver gang du snurrer. Fyllyset holder skyggesiden lesbar. */
+    var solAz = solVinkel + 0.9;
+    /* Holdes under senit hele dagen – ellers faller skyggene rett ned
+       under husene og forsvinner. */
+    var solY = 0.36 + 0.30 * Math.max(0, solHoyde);
+    var sol = OW.M.normaliser([Math.sin(solAz) * 0.8, solY, Math.cos(solAz) * 0.8]);
+    var fyll = OW.M.normaliser([-sol[0], 0.45, -sol[2]]);
 
     var p = OW.Scene.palett || OW.By3D.PALETT[0];
     var kveld = OW.klem(1 - Math.abs(solHoyde) * 2.4, 0, 1);        // varmt lys ved soloppgang/solnedgang
@@ -349,6 +366,9 @@ OW.Scene = {
       bind(bf.flagg, a.flagg, 1);
       gl.drawArrays(gl.TRIANGLES, 0, ant);
     };
+    gl.uniform1f(OW.Scene.uni.uSkygge, 0);
+    gl.uniform1f(OW.Scene.uni.uAlfa, 1);
+    gl.uniform3fv(OW.Scene.uni.uSkyggeSol, new Float32Array(sol));
     tegnBuffer(OW.Scene.buffere, OW.Scene.antall);
 
     /* Folkene går videre – bygges om noen ganger i sekundet */
@@ -362,6 +382,25 @@ OW.Scene = {
       gl.bindBuffer(gl.ARRAY_BUFFER, bf.flagg); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(fm.flagg), gl.DYNAMIC_DRAW);
       OW.Scene.antallFolk = fm.antall();
     }
+    /* Skyggepass: samme geometri, lagt ned på bakken langs sollyset.
+       Halvgjennomsiktig og uten dybdeskriving, ellers slåss skyggene
+       med hverandre der de overlapper. */
+    var skyggeStyrke = 0.46 * (1 - natt * 0.75) * OW.klem(solHoyde * 2.4 + 0.15, 0, 1);
+    if (skyggeStyrke > 0.02) {
+      gl.enable(gl.BLEND);
+      gl.depthMask(false);
+      gl.uniform1f(OW.Scene.uni.uSkygge, 1);
+      gl.uniform1f(OW.Scene.uni.uAlfa, skyggeStyrke);
+      tegnBuffer(OW.Scene.buffereBygg, OW.Scene.antallBygg);
+      tegnBuffer(OW.Scene.buffereFolk, OW.Scene.antallFolk);
+      gl.uniform1f(OW.Scene.uni.uSkygge, 0);
+      gl.uniform1f(OW.Scene.uni.uAlfa, 1);
+      gl.depthMask(true);
+      gl.disable(gl.BLEND);
+    }
+
+    /* så selve husene og folkene */
+    tegnBuffer(OW.Scene.buffereBygg, OW.Scene.antallBygg);
     tegnBuffer(OW.Scene.buffereFolk, OW.Scene.antallFolk);
 
     OW.Scene.tegnEtiketter(OW.M.gang(proj, view), bredde / pd, hoyde / pd, natt);

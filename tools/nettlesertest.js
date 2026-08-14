@@ -162,9 +162,20 @@ function finnChromium() {
     if (!tre_d) return;
     await side.click('#fane-by');
     await side.waitForTimeout(300);
-    const f = await side.evaluate(() => ({ ant: OW.Scene.antall, merker: OW.Scene.merker.length }));
-    if (f.ant < 3000) throw new Error('for lite geometri: ' + f.ant + ' hjørner');
+    const f = await side.evaluate(() => ({
+      terreng: OW.Scene.antall, bygg: OW.Scene.antallBygg, merker: OW.Scene.merker.length
+    }));
+    if (f.terreng < 3000) throw new Error('for lite terreng: ' + f.terreng + ' hjørner');
+    /* husene har grunnmur, karmer, dører og tak – de skal være detaljerte */
+    if (f.bygg < 8000) throw new Error('husene mangler detaljer: ' + f.bygg + ' hjørner');
     if (f.merker < 5) throw new Error('for få etiketter: ' + f.merker);
+  });
+
+  await steg('Skygger og hus tegnes uten WebGL-feil', async () => {
+    if (!tre_d) return;
+    await side.waitForTimeout(400);
+    const kode = await side.evaluate(() => OW.Scene.gl.getError());
+    if (kode !== 0) throw new Error('WebGL meldte feilkode ' + kode);
   });
 
   await steg('Klikk på en bygning i 3D åpner byggekortet', async () => {

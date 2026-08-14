@@ -24,17 +24,30 @@ byggeplasser får stillas, bymuren legger seg rundt hele byen, og landskapet
 skifter karakter når du bytter epoke.
 
 3D-en er skrevet fra bunnen i **ren WebGL — uten three.js eller noe annet
-bibliotek**. Hele byen tegnes som én buffer med ett tegnekall, og bygges bare om
-når byen faktisk endrer seg. Har du ikke WebGL, faller spillet automatisk
-tilbake til en 2D-silhuett, og alt annet virker som før.
+bibliotek**. Geometrien bygges bare om når byen faktisk endrer seg. Har du ikke
+WebGL, faller spillet automatisk tilbake til en 2D-silhuett, og alt annet virker
+som før.
+
+**Husene er ekte hus, ikke kasser med lokk.** Hvert bygg har grunnmur i stein,
+vegger i sitt eget materiale — bindingsverk, laftet tre, kvaderstein eller
+marmor — dør med håndtak, vinduer med karm og sprosse, tak med utstikk, synlig
+tykkelse og mønebjelke, og pipe der det hører hjemme. Ingen to hus er like:
+størrelse, høyde, retning, takvinkel og fargetone varierer med et fast frø per
+tomt, så byen ser bygget ut i stedet for stemplet.
+
+**Ekte skygger.** Husene, murene, trærne og folkene tegnes en gang til, lagt ned
+på bakken langs sollyset. Sola står fast i verden og går sin runde over
+himmelen, så skyggene svinger gjennom døgnet — lange om morgenen og kvelden,
+korte midt på dagen.
 
 * **Dra** for å snurre kameraet · **rull/knip** for å zoome · **klikk en bygning**
   for å oppgradere den direkte
 * Herskeren din og innbyggerne går i gatene — flere folk etter hvert som
   befolkningen vokser
-* Sola følger kameraet med litt forskyvning — ellers ser du bare skyggesiden av
-  din egen by
-* Døgnsyklus på fire minutter, med bølger på vannet og lys i vinduene
+* Døgnsyklus på fire minutter, med bølger på vannet, lys i vinduene og skygger
+  som vandrer
+* Landskap med innsjø, strandkant, blandingsskog, steiner og snødekte fjell i
+  horisonten
 
 ## 📱 Laget for mobil
 
@@ -115,8 +128,9 @@ src/core/
   payments.js           simulert kjøpslag + hvor ekte betaling hører hjemme
 src/by3d/               3D-byen – ingen tredjepartsbibliotek
   motor.js              matriser, meshbygger og shaderne
+  hus.js                detaljert husbygger: materialer, tak, vinduer, dører
   modeller.js           én oppskrift per bygningstype + terreng
-  scene.js              kamera, lys, døgnsyklus, klikk og etiketter
+  scene.js              kamera, lys, skygger, døgnsyklus, klikk og etiketter
 src/ui/
   panels.js             én funksjon per fane
   app.js                spilløkke, klikk, modaler, varsler
@@ -131,7 +145,7 @@ tools/
 ```bash
 node tools/simulering.js 14        # simuler 14 dagers spilling + 15 kontroller
 node tools/simulering.js 45 25     # 45 dager, 25 sekunder per steg (raskere)
-node tools/nettlesertest.js        # 24 UI-tester i ekte Chromium, inkl. 3D
+node tools/nettlesertest.js        # 25 UI-tester i ekte Chromium, inkl. 3D
 node tools/mobilbilder.js          # skjermbilder i mobilformat
 ```
 
@@ -162,6 +176,13 @@ utviklingen:
 3. **Veggen kom for tidlig.** Produksjon vokste lineært mens kostnadene vokste
    1,5× per nivå, så riket stagnerte etter få dager. Kurvene er dempet til
    1,38–1,50 og fordelt slik at hverdagsbygg er billigst å løfte.
+
+Grafikken har hatt sine egne feller. To verdt å huske hvis du bygger videre:
+tåken regnes per hjørne, så én diger bakkeflate fikk bare fire målepunkter —
+alle langt unna — og hele sletta ble tåkegrå helt inn til kameraet; bakken må
+deles i ruter. Og flater må vende ut fra veggen: vinduene på baksiden av husene
+var usynlige fordi hjørnene lå i samme rekkefølge som på forsiden, og WebGL
+klipper bort alt som vender fra oss.
 
 ## Slik utvider du spillet
 

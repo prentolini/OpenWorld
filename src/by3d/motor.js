@@ -78,11 +78,28 @@ OW.Mesh = function () {
   this.nor = [];
   this.farge = [];
   this.flagg = [];
+  this._rv = 0;
+  this._rc = [0, 0];
 };
 
 OW.Mesh.prototype = {
+  /* Alt som tegnes etter dette roteres rundt (cx,cz). Gjør at hus kan stå
+     litt på skrå i forhold til hverandre uten egen matematikk per primitiv. */
+  settRot: function (vinkel, cx, cz) {
+    this._rv = vinkel || 0;
+    this._rc = [cx || 0, cz || 0];
+  },
+
+  _snu: function (p) {
+    if (!this._rv) return p;
+    var dx = p[0] - this._rc[0], dz = p[2] - this._rc[1];
+    var c = Math.cos(this._rv), s2 = Math.sin(this._rv);
+    return [this._rc[0] + dx * c - dz * s2, p[1], this._rc[1] + dx * s2 + dz * c];
+  },
+
   /* Én trekant med flat skyggelegging */
   trekant: function (a, b, c, farge, flagg) {
+    a = this._snu(a); b = this._snu(b); c = this._snu(c);
     var u = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
     var v = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
     var n = OW.M.normaliser(OW.M.kryss(u, v));
@@ -98,6 +115,14 @@ OW.Mesh.prototype = {
   firkant: function (a, b, c, d, farge, flagg) {
     this.trekant(a, b, c, farge, flagg);
     this.trekant(a, c, d, farge, flagg);
+  },
+
+  /* Flytter alt fra en annen mesh inn i denne */
+  slaaSammen: function (annen) {
+    this.pos = this.pos.concat(annen.pos);
+    this.nor = this.nor.concat(annen.nor);
+    this.farge = this.farge.concat(annen.farge);
+    this.flagg = this.flagg.concat(annen.flagg);
   },
 
   /* Kasse med valgfri skalering av toppen (tak/tårn blir smalere oppover).
@@ -196,6 +221,26 @@ OW.Mesh.prototype = {
     }
   },
 
+  /* Stor flate delt opp i ruter.
+     Tåken regnes per hjørne, så én diger firkant får bare fire målepunkter –
+     alle langt unna – og hele bakken blir tåkegrå helt inn til kameraet.
+     Oppdelingen gir tåken noe å regne på der spilleren faktisk ser. */
+  /* celle = ønsket rutestørrelse i enheter. Antall ruter regnes per akse, så
+     et langt, smalt område ikke ender opp med båndformede ruter. */
+  flateRuter: function (x, y, z, bredde, dybde, celle, farge, flagg, variasjon) {
+    var nx = Math.max(1, Math.round(bredde / celle));
+    var nz = Math.max(1, Math.round(dybde / celle));
+    var bw = bredde / nx, dw = dybde / nz;
+    for (var i = 0; i < nx; i++) {
+      for (var j = 0; j < nz; j++) {
+        var cx = x - bredde / 2 + bw * (i + 0.5);
+        var cz = z - dybde / 2 + dw * (j + 0.5);
+        var f = variasjon ? OW.By3D.varier(farge, i * 7.3 + j * 3.1, variasjon) : farge;
+        this.flate(cx, y, cz, bw + 0.02, dw + 0.02, f, flagg);
+      }
+    }
+  },
+
   /* Flatt rektangel i xz-planet (bakke, vann, vei) */
   flate: function (x, y, z, bredde, dybde, farge, flagg) {
     var b2 = bredde / 2, d2 = dybde / 2;
@@ -253,10 +298,24 @@ OW.GL = {
     'uniform float uTid;',
     'uniform float uNatt;',
     'uniform vec3 uHimmelTint;',
+    'uniform float uSkygge;',
+    'uniform vec3 uSkyggeSol;',
     'varying vec3 vFarge;',
     'varying float vAvstand;',
     'void main() {',
     '  vec3 p = aPos;',
+    '  if (uSkygge > 0.5) {',
+    /* Legg punktet ned på bakken langs lysretningen – ekte formskygge */
+    '    float k = (p.y - 0.185) / max(uSkyggeSol.y, 0.25);',
+    '    p.x -= uSkyggeSol.x * k;',
+    '    p.z -= uSkyggeSol.z * k;',
+    '    p.y = 0.185;',
+    '    vec4 sp = uView * vec4(p, 1.0);',
+    '    gl_Position = uProj * sp;',
+    '    vFarge = vec3(0.055, 0.05, 0.045);',
+    '    vAvstand = length(sp.xyz);',
+    '    return;',
+    '  }',
     '  if (aFlagg > 0.5 && aFlagg < 1.5) {',
     '    p.y += sin(uTid * 1.3 + p.x * 0.55 + p.z * 0.4) * 0.07;',   // bølger
     '  }',
@@ -287,9 +346,10 @@ OW.GL = {
     'uniform vec3 uTakeFarge;',
     'uniform float uTakeNaer;',
     'uniform float uTakeFjern;',
+    'uniform float uAlfa;',
     'void main() {',
     '  float t = clamp((vAvstand - uTakeNaer) / (uTakeFjern - uTakeNaer), 0.0, 1.0);',
-    '  gl_FragColor = vec4(mix(vFarge, uTakeFarge, t), 1.0);',
+    '  gl_FragColor = vec4(mix(vFarge, uTakeFarge, t), uAlfa);',
     '}'
   ].join('\n'),
 
