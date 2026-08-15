@@ -7,7 +7,9 @@ name: Publiser appen
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - claude/empire-building-game-repsv7
   workflow_dispatch:
 
 permissions:
