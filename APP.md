@@ -17,16 +17,23 @@ Telefonen krever `https` for å tillate installasjon. Velg én:
 
 **a) GitHub Pages (gratis, anbefalt)**
 
-1. Slå sammen denne grenen til `main`.
-2. Gå til repoet på GitHub → **Settings** → **Pages**.
-3. Under **Source**, velg **GitHub Actions**. Ferdig.
+Ett klikk, én gang:
 
-Arbeidsflyten i `.github/workflows/pages.yml` bygger og publiserer automatisk
-ved hver endring på `main`. Adressen blir:
+1. Åpne <https://github.com/prentolini/OpenWorld/settings/pages>
+2. Under **Source**, velg **GitHub Actions** i nedtrekkslista.
+
+Det er alt. Arbeidsflyten i `.github/workflows/pages.yml` ligger klar og kjører
+allerede fra utviklingsgrenen — den trenger ikke at du slår sammen til `main`
+først. Neste kjøring publiserer spillet på:
 
 ```
 https://prentolini.github.io/OpenWorld/
 ```
+
+Kjører du den før Pages er slått på, stopper den med
+`HttpError: Not Found — get-a-pages-site`. Det betyr bare at bryteren over
+mangler; kjør den på nytt etterpå fra **Actions**-fanen → **Publiser appen** →
+**Run workflow**.
 
 **b) Hvilken som helst webserver**
 
