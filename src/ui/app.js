@@ -91,6 +91,13 @@ OW.App = {
       }).catch(function (e) { console.warn('Service worker: ' + e.message); });
     }
 
+    /* Knappen på startskjermen: synlig med en gang, uansett plattform –
+       det skal ikke være noe man må lete etter. */
+    var kn = document.getElementById('installKnapp');
+    if (kn && !OW.App.erInstallert() && location.protocol.indexOf('http') === 0) {
+      kn.classList.remove('skjult');
+    }
+
     if (OW.App.erInstallert()) return;
 
     /* Android/Chrome gir oss en ekte installasjonsdialog å utløse. */
